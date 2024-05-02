@@ -2,20 +2,21 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore} from 'firebase/firestore';
-
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyDHrtsCqnun0PZhNMhxxIktDWWi20ukhYs",
-  authDomain: "aphasia-d45c8.firebaseapp.com",
-  projectId: "aphasia-d45c8",
-  storageBucket: "aphasia-d45c8.appspot.com",
-  messagingSenderId: "149096240255",
-  appId: "1:149096240255:web:11adc0e2993bb8f4845b4a"
+    apiKey: "AIzaSyBgh2l-ki97b4CDn6ppf93DEJ7khR8Qhj8",
+    authDomain: "hci-aphasia.firebaseapp.com",
+    databaseURL: "https://hci-aphasia-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "hci-aphasia",
+    storageBucket: "hci-aphasia.appspot.com",
+    messagingSenderId: "1043663112022",
+    appId: "1:1043663112022:web:d904bea21a6e1842a4f8f7",
+    measurementId: "G-HEY3N2D11F"
 };
-
 
 // Initialize Firebase
 export const FIREBASE_APP = initializeApp(firebaseConfig);
