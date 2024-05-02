@@ -1,20 +1,9 @@
-import {
-  View,
-  SafeAreaView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  Image,
-} from "react-native";
-import AntDesign from "react-native-vector-icons/AntDesign";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
-import React from "react";
-import { useNavigation } from "@react-navigation/native";
+import { AntDesign, FontAwesome } from "@expo/vector-icons";
+import { TouchableOpacity, View, Image, Text } from "react-native";
 
-export default function Results() {
-  const navigation = useNavigation();
+export const Results = ()=> {
   return (
-      <View className=" w-full h-[35%] flex flex-col items-center bg-orange-400 px-2 py-3">
+    <View className="flex flex-col items-center bg-orange-400 px-2 py-3">
         <View className="w-full h-[48%] flex flex-row justify-items my-1">
           <TouchableOpacity
             onPress={() => {
@@ -101,4 +90,4 @@ export default function Results() {
         </View>
       </View>
   );
-}
+};
