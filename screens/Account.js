@@ -16,9 +16,40 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import * as firebase from 'firebase';
+import { firebaseConfig } from '../firebaseConfig';
+import { db } from '../firebaseConfig';
+import { ref, set } from "firebase/database";
+import { doc, setDoc, collection, addDoc } from "firebase/firestore";
+
 
 export default function Account() {
   const navigation = useNavigation();
+
+  const [name, setName] = useState("");
+  const [dob, setDob] = useState("");
+  const [phone, setPhone] = useState("");
+  const [relativePhone, setRelativePhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [startYear, setStartYear] = useState("");
+
+  const saveUserAccountInfo = async () => {
+    try {
+      const user = firebase.auth().currentUser;
+      const docRef = doc(db, "users", user.uid);
+      await setDoc(docRef, {
+        name: name,
+        dob: dob,
+        phone: phone,
+        relativePhone: relativePhone,
+        address: address,
+        startYear: startYear,
+      });
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+    navigation.navigate("Flashcard");
+  }
 
   // Format the date to dd/mm/yyyy
   const formatDate = (date) => {
@@ -85,6 +116,7 @@ export default function Account() {
                 placeholderTextColor="#CCCCCC"
                 onFocus={handleFocus}
                 onBlur={handleBlur}
+                onChangeText={(text) => setName(text)}
               />
             </View>
 
@@ -100,6 +132,7 @@ export default function Account() {
                 placeholderTextColor="#CCCCCC"
                 onFocus={handleFocusDate}
                 onBlur={handleBlurDate}
+                onChangeText={(text) => setDob(text)}
               />
               {show && (
                 <DateTimePicker
@@ -123,6 +156,7 @@ export default function Account() {
                 placeholderTextColor="#CCCCCC"
                 onFocus={handleFocus}
                 onBlur={handleBlur}
+                onChangeText={(text) => setPhone(text)}
               />
             </View>
 
@@ -141,6 +175,7 @@ export default function Account() {
                 placeholderTextColor="#CCCCCC"
                 onFocus={handleFocus}
                 onBlur={handleBlur}
+                onChangeText={(text) => setRelativePhone(text)}
               />
             </View>
 
@@ -151,11 +186,15 @@ export default function Account() {
             <View className="bg-black/4 pl-5 pb-2 rounded-3xl w-full mb-1 border border-solid border-gray-400">
               <TextInput
                 className="text-lg"
-                placeholder="VD: 144 Xuân Thủy, Cầu Giấy"
+                placeholder="144 Xuân Thủy, Cầu Giấy"
                 placeholderTextColor="#CCCCCC"
                 onFocus={handleFocus}
                 onBlur={handleBlur}
+                onChangeText={(text) => setAddress(text)}
               />
+              
+
+
             </View>
 
             <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
@@ -169,13 +208,14 @@ export default function Account() {
                 placeholderTextColor="#CCCCCC"
                 onFocus={handleFocus}
                 onBlur={handleBlur}
+                onChangeText={(text) => setStartYear(text)}
               />
             </View>
 
             <View>
               <TouchableOpacity
                 className="w-full p-3 rounded-2xl  mt-5 border border-solid border-black flex flex-row items-center"
-                onPress={() => navigation.navigate("Flashcard")}
+                onPress={() => saveUserAccountInfo()}
               >
                 <Icon name="right" size={24} color="black" />
                 <Text className="text-xl text-black text-center">

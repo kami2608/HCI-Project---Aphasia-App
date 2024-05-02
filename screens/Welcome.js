@@ -1,8 +1,6 @@
 import {
   View,
   Text,
-  TextInput,
-  Touchable,
   TouchableOpacity,
   Image,
   KeyboardAvoidingView,
@@ -11,8 +9,6 @@ import {
 import React from "react";
 import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
-
-import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 
 export default function Welcome() {

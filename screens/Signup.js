@@ -9,11 +9,32 @@ import {
   Platform,
 } from "react-native";
 import React from "react";
-import { StatusBar } from "expo-status-bar";
+import { initializeApp } from "firebase/app";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
+import useState from "react";
 
 export default function Signup() {
-  const navigation = useNavigation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  
+  const createUser = (email, password) => {
+    const auth = getAuth();
+    const navigation = useNavigation();
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        navigation.navigate("Account");
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // ..
+      });
+  }
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: "white" }}
@@ -36,6 +57,7 @@ export default function Signup() {
                 className="text-xl"
                 placeholder="Email"
                 placeholderTextColor="#CCCCCC"
+                onChangeText={(text) => setEmail(text)}
               />
             </View>
             <View className="bg-black/4 p-3 rounded-2xl w-full border border-solid border-gray-400">
@@ -44,6 +66,7 @@ export default function Signup() {
                 placeholder="Mật khẩu"
                 placeholderTextColor="#CCCCCC"
                 secureTextEntry
+                onChangeText={(text) => setPassword(text)}
               />
             </View>
             <View className="bg-black/4 p-3 rounded-2xl w-full mb-3 border border-solid border-gray-400">
@@ -57,7 +80,7 @@ export default function Signup() {
             <View>
               <TouchableOpacity
                 className="w-full bg-sky-400 p-3 rounded-2xl mb-2 mt-4 border border-solid border-sky-700"
-                onPress={() => navigation.navigate("Account")}
+                onPress={() => createUser(email, password)}
               >
                 <Text className="text-xl font-bold text-white text-center">
                   Đăng ký

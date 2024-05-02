@@ -11,10 +11,30 @@ import {
 } from "react-native";
 import React from "react";
 import { StatusBar } from "expo-status-bar";
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
+import { text } from "stream/consumers";
 
 const Login = () => {
   const navigation = useNavigation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const auth = getAuth();
+
+  const signIn = (email, password) => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        navigation.navigate("Flashcard");
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+      });
+  }
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: "white" }}
@@ -37,6 +57,7 @@ const Login = () => {
                 className="text-xl"
                 placeholder="Email"
                 placeholderTextColor="#CCCCCC"
+                onChangeText={(text) => setEmail(text)}
               />
             </View>
             <View className="bg-black/4 p-3 rounded-2xl w-full mb-3 border border-solid border-gray-400">
@@ -45,12 +66,13 @@ const Login = () => {
                 placeholder="Mật khẩu"
                 placeholderTextColor="#CCCCCC"
                 secureTextEntry
+                onChangeText={(text) => setPassword(text)}
               />
             </View>
             <View>
               <TouchableOpacity
                 className="w-full bg-sky-400 p-3 rounded-2xl mb-2 mt-4 border border-solid border-sky-700"
-                onPress={() => navigation.navigate("Welcome")}
+                onPress={() => signIn(email, password)}
               >
                 <Text className="text-xl font-bold text-white text-center">
                   Đăng nhập
