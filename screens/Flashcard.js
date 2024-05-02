@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   SafeAreaView,
@@ -16,10 +16,63 @@ import { Results } from "../components/Results";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { Cards } from "../components/Cards";
+import axios from 'axios';
+import { storage } from "../firebaseConfig";
+import { set } from "firebase/database";
 
 export default function Flashcard() {
   const navigation = useNavigation();
+  const [categoryIds, setCategoryIds] = useState([]);
+  const [categoryNames, setCategoryNames] = useState([]);
+  const [cardIds, setCardIds] = useState([]);
+  const [cardNames, setCardNames] = useState([]);
+  const [symbol, setSymbol] = useState([]);
+  const [currentCategory, setCurrentCategory] = useState(65);
+  const [imgUrls, setImgUrls] = useState([]);
   const route = useRoute();
+
+
+  // get all categories 
+  useEffect(() => {
+    axios.get('http://localhost:8080/api/v1/cards/category').then(res => {
+      console.log(res.data);
+      setCategoryIds(res.data.map(category => category.categoryId));
+      setCategoryNames(res.data.map(category => category.categoryName));
+      console.log(categoryIds, categoryNames);
+    }).catch(err => {
+      console.log(err);
+    })
+  },
+    []);
+  // get cards by category
+  const getCardName = (categoryId) => {
+    axios.get(`http://localhost:8080/api/v1/cards/category/${categoryId}`).then(res => {
+      console.log(res.data);
+      setCardIds(res.data.map(card => card.symbolId));
+      setSymbol(res.data.map(card => card.symbol));
+      setCardNames(res.data.map(card => card.wordVi));
+    }).catch(err => {
+      console.log(err);
+    })
+  }
+  // get cards image from firebase storage
+  const getCards = (categoryId, imgSymbols) => {
+    const promises = imgSymbols.map(imgSymbol => {
+      const imageRef = storage.ref(`${categoryId}/${imgSymbol}.jpg`);
+      return imageRef.getDownloadURL();
+    });
+
+    Promise.all(promises)
+      .then(urls => {
+        setImgUrls(urls);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
+
+  
+
   const images = [
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
@@ -49,7 +102,7 @@ export default function Flashcard() {
 
       <View className="w-full h-[6%] bg-white rounded-xl flex-row justify-between items-center">
 
-        
+      
         <TouchableOpacity
           className="pl-4 flex flex-column items-center"
           onPress={() => navigation.navigate("Profile")}
@@ -94,7 +147,7 @@ export default function Flashcard() {
             >
               <Image
                 source={{
-                  uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
+                  uri: "https://firebasestorage.googleapis.com/v0/b/hci-aphasia.appspot.com/o/10%2Fbear.jpg?alt=media&token=97ef57b5-bf44-4747-b00c-aa8b1bd60c19",
                 }}
                 className="rounded-3xl flex-1"
               />
@@ -179,11 +232,11 @@ export default function Flashcard() {
           )}
           numColumns={3}
           showsVerticalScrollIndicator={false}
-          // keyExtractor={(_, index) => index.toString()}
+        // keyExtractor={(_, index) => index.toString()}
         />
       </View>
 
-      {/* Phan 4 */}
+      {/* Switch back button */}
       <View className="w-full h-[11%] flex flex-row items-center justify-between bg-white px-4 border-t-2 border-gray-300">
         <TouchableOpacity
           onPress={() => {
@@ -251,9 +304,8 @@ export default function Flashcard() {
                 console.log(index + "abc");
                 setSelectedTopic(index);
               }}
-              className={`${
-                selectedTopic === index ? "border-2 border-blue-400" : ""
-              }`}
+              className={`${selectedTopic === index ? "border-2 border-blue-400" : ""
+                }`}
             >
               <Image
                 source={{ uri: uri }}

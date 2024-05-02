@@ -12,15 +12,16 @@ import {
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
 import { text } from "stream/consumers";
+import { auth } from "../firebaseConfig";
+
 
 const Login = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const auth = getAuth();
+  
 
   const signIn = (email, password) => {
     signInWithEmailAndPassword(auth, email, password)
