@@ -8,28 +8,45 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 import DateTimePicker from "@react-native-community/datetimepicker";
-
+import { FIREBASE_AUTH, FIREBASE_DB } from "../firebaseConfig";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 
 export default function Settings() {
   const navigation = useNavigation();
-  const [isTextInputFocused, setTextInputFocused] = useState(false);
+  const auth = FIREBASE_AUTH;
 
-  const handleFocus = () => {
-    setTextInputFocused(true);
-  };
-
-  const handleBlur = () => {
-    setTextInputFocused(false);
-  };
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const userId = FIREBASE_AUTH.currentUser.email;
+      try {
+        const docRef = doc(FIREBASE_DB, "users", userId);
+        const docSnapshot = await getDoc(docRef);
+        if (docSnapshot.exists()) {
+          const fetchedData = docSnapshot.data();
+          setForm({
+            ...fetchedData, // spread all properties of fetchedData
+            email: auth.currentUser.email // ensure email is updated from the auth module
+          });
+        } else {
+          console.log("No user data found!");
+        }
+      } catch (error) {
+        console.error("Error fetching user data: ", error);
+      }
+    };
+  
+    fetchUserData();
+  }, []);
+  
 
   // Format the date to dd/mm/yyyy
   const formatDate = (date) => {
@@ -39,8 +56,40 @@ export default function Settings() {
     return `${day}/${month}/${year}`;
   };
 
+  const getValidDate = (dateString) => {
+    const parts = dateString.split("/");
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // JS months start at 0
+      const year = parseInt(parts[2], 10);
+      const date = new Date(year, month, day);
+      if (!isNaN(date)) {
+        return date;
+      }
+    }
+    return new Date(); // return current date if parsing fails
+  };
+
+  const defaultForm = {
+    name: "",
+    email: auth.currentUser.email,
+    phone: "",
+    address: "",
+    dob: "",
+    yearOfStroke: "",
+    emergencyPhone: "",
+  };
+
+  const [form, setForm] = useState(defaultForm);
+  const [isTextInputFocused, setTextInputFocused] = useState(false);
   const [show, setShow] = useState(false);
-  const [date, setDate] = useState(new Date());
+
+  const handleFocus = () => setTextInputFocused(true);
+  const handleBlur = () => setTextInputFocused(false);
+
+  const handleChange = (name, value) => {
+    setForm((prevForm) => ({ ...prevForm, [name]: value }));
+  };
 
   const handleFocusDate = () => {
     setTextInputFocused(true);
@@ -53,10 +102,40 @@ export default function Settings() {
   };
 
   const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
+    const currentDate = selectedDate || getValidDate(form.dob);
     setShow(Platform.OS === "ios"); // Keep the picker open on iOS even after selection.
-    setDate(currentDate);
+    handleChange("dob", formatDate(currentDate));
   };
+
+  const handleSubmit = () => {
+    const submit = async () => {
+      const { name, phone, dob, address, yearOfStroke, emergencyPhone, email } = form;
+
+      if (!name || !phone || !dob || !address || !yearOfStroke || !emergencyPhone || !email) {
+        alert("Vui lòng điền đầy đủ các mục!");
+        return;
+      }
+
+      try {
+        const docRef = doc(FIREBASE_DB, "users", email);
+        await updateDoc(docRef, {
+          name: name,
+          phone: phone,
+          dob: dob,
+          address: address,
+          yearOfStroke: yearOfStroke,
+          emergencyPhone: emergencyPhone
+        });
+        navigation.navigate("ConfirmSettings");
+        console.log("Data updated successfully!");
+      } catch (error) {
+        console.error("Error updating data: ", error);
+      }
+    };
+
+    submit();
+  };
+
 
   return (
     <View className="bg-white h-full w-full flex items-center">
@@ -95,8 +174,8 @@ export default function Settings() {
           <View className="bg-black/4 pl-5 pb-2 rounded-3xl w-full mb-1 border border-solid border-gray-400">
             <TextInput
               className="text-lg"
-              placeholder="Nguyễn Văn A"
-              placeholderTextColor="#CCCCCC"
+              value={form.name}
+              onChangeText={(value) => handleChange('name', value)}
               onFocus={handleFocus}
               onBlur={handleBlur}
             />
@@ -109,15 +188,13 @@ export default function Settings() {
           <View className="bg-black/4 pl-5 pb-2 rounded-3xl w-full mb-1 border border-solid border-gray-400">
             <TextInput
               className="text-lg"
-              value={formatDate(date)}
-              placeholder="dd/mm/yyyy"
-              placeholderTextColor="#CCCCCC"
+              value={form.dob}
               onFocus={handleFocusDate}
               onBlur={handleBlurDate}
             />
             {show && (
               <DateTimePicker
-                value={date}
+                value={getValidDate(form.dob)}
                 mode="date"
                 is24Hour={true}
                 display="inline"
@@ -134,8 +211,8 @@ export default function Settings() {
           <View className="bg-black/4 pl-5 pb-2 rounded-3xl w-full mb-1 border border-solid border-gray-400">
             <TextInput
               className="text-lg"
-              placeholder="0868809172"
-              placeholderTextColor="#CCCCCC"
+              value={form.phone}
+                onChangeText={(value) => handleChange('phone', value)}
               onFocus={handleFocus}
               onBlur={handleBlur}
             />
@@ -152,8 +229,8 @@ export default function Settings() {
           <View className="bg-black/4 pl-5 pb-2 rounded-3xl w-full mb-1 border border-solid border-gray-400">
             <TextInput
               className="text-lg"
-              placeholder="0578643246"
-              placeholderTextColor="#CCCCCC"
+              value={form.emergencyPhone}
+                onChangeText={(value) => handleChange('emergencyPhone', value)}
               onFocus={handleFocus}
               onBlur={handleBlur}
             />
@@ -166,8 +243,8 @@ export default function Settings() {
           <View className="bg-black/4 pl-5 pb-2 rounded-3xl w-full mb-1 border border-solid border-gray-400">
             <TextInput
               className="text-lg"
-              placeholder="144 Xuân Thủy, Cầu Giấy"
-              placeholderTextColor="#CCCCCC"
+              value={form.address}
+                onChangeText={(value) => handleChange('address', value)}
               onFocus={handleFocus}
               onBlur={handleBlur}
             />
@@ -180,8 +257,8 @@ export default function Settings() {
           <View className="bg-black/4 pl-5 pb-2 rounded-3xl w-full mb-1 border border-solid border-gray-400">
             <TextInput
               className="text-lg"
-              placeholder="2024"
-              placeholderTextColor="#CCCCCC"
+              value={form.yearOfStroke}
+                onChangeText={(value) => handleChange('yearOfStroke', value)}
               onFocus={handleFocus}
               onBlur={handleBlur}
             />
@@ -192,7 +269,7 @@ export default function Settings() {
       <View className=" h-[15%] w-[80%]  bg-white rounded-xl flex-row justify-between items-center">
         <TouchableOpacity
           className=" w-[39%] p-3 rounded-2xl mb-5 border border-solid border-black items-center"
-          onPress={() => navigation.navigate("ConfirmSettings")}
+          onPress={ handleSubmit }
         >
           <Text className="text-xl text-black text-center">Chỉnh sửa</Text>
         </TouchableOpacity>

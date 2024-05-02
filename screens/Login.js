@@ -9,12 +9,53 @@ import {
   Platform,
   useAnimatedValue,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
+import { FIREBASE_AUTH } from "../firebaseConfig";
+import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Login = () => {
   const navigation = useNavigation();
+  const [email, setEmail] = useState('')
+  const [password, setPass] = useState('')
+  const [loading, setLoading] = useState(false)
+  const auth = FIREBASE_AUTH
+
+  // onAuthStateChanged(auth, (user) => {
+  //   if (user) {
+  //     navigation.navigate("Welcome")
+  //     const uid = user.uid;
+  //     AsyncStorage.setItem('userToken', uid);
+  //   } else {
+  //     console.log("No user")
+  //     AsyncStorage.removeItem('userToken')
+  //   }
+  // })
+
+  // async function checkUserSession() {
+  //   const userID = await AsyncStorage.getItem('userToken');
+  //   if (userID) {
+  //     console.log('User ID retrived from storage: ', userID);
+  //     navigation.navigate("Welcome")
+  //   }
+  // }
+
+  const login = async() => {
+    setLoading(true)
+    try{
+      console.log(email, ": ", password)
+      await signInWithEmailAndPassword(auth, email, password)
+      navigation.navigate("Welcome")
+    } catch (error) {
+      console.log(error)
+      alert('Sign in failed: ' + error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: "white" }}
@@ -35,22 +76,26 @@ const Login = () => {
             <View className="bg-black/4 p-3 rounded-2xl w-full border border-solid border-gray-400">
               <TextInput
                 className="text-xl"
+                value={email}
                 placeholder="Email"
                 placeholderTextColor="#CCCCCC"
+                onChangeText={setEmail}
               />
             </View>
             <View className="bg-black/4 p-3 rounded-2xl w-full mb-3 border border-solid border-gray-400">
               <TextInput
                 className="text-xl"
+                value={password}
                 placeholder="Mật khẩu"
                 placeholderTextColor="#CCCCCC"
+                onChangeText={setPass}
                 secureTextEntry
               />
             </View>
             <View>
               <TouchableOpacity
                 className="w-full bg-sky-400 p-3 rounded-2xl mb-2 mt-4 border border-solid border-sky-700"
-                onPress={() => navigation.navigate("Welcome")}
+                onPress={() => login()}
               >
                 <Text className="text-xl font-bold text-white text-center">
                   Đăng nhập
