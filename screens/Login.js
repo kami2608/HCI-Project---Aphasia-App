@@ -10,12 +10,10 @@ import {
   useAnimatedValue,
 } from "react-native";
 import React from "react";
-import { StatusBar } from "expo-status-bar";
-import { initializeApp } from "firebase/app";
 import { useNavigation } from "@react-navigation/native";
-import { text } from "stream/consumers";
-import { auth } from "../firebaseConfig";
-
+import { auth, db } from "../firebaseConfig";
+import { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 const Login = () => {
   const navigation = useNavigation();

@@ -16,11 +16,10 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import * as firebase from 'firebase';
-import { firebaseConfig } from '../firebaseConfig';
-import { db } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
 import { ref, set } from "firebase/database";
 import { doc, setDoc, collection, addDoc } from "firebase/firestore";
+import axios from "axios";
 
 
 export default function Account() {
@@ -35,7 +34,7 @@ export default function Account() {
 
   const saveUserAccountInfo = async () => {
     try {
-      const user = firebase.auth().currentUser;
+      const user = auth.currentUser;
       const docRef = doc(db, "users", user.uid);
       await setDoc(docRef, {
         name: name,

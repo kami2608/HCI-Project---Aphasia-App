@@ -8,19 +8,28 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import React from "react";
-import { initializeApp } from "firebase/app";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import * as React from "react";
+import { auth } from "../firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
-import useState from "react";
+import { useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const navigation = useNavigation();
+  
+  const checkPasswords = (password, confirmPassword) => {
+    if (password != confirmPassword) {
+      alert("Mật khẩu không khớp");
+    } else {
+      createUser(email, password);
+    }
+  }
   
   const createUser = (email, password) => {
-    const auth = getAuth();
-    const navigation = useNavigation();
+    
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
@@ -75,12 +84,13 @@ export default function Signup() {
                 placeholder="Nhập lại mật khẩu"
                 placeholderTextColor="#CCCCCC"
                 secureTextEntry
+                onChangeText={(text) => setConfirmPassword(text)}
               />
             </View>
             <View>
               <TouchableOpacity
                 className="w-full bg-sky-400 p-3 rounded-2xl mb-2 mt-4 border border-solid border-sky-700"
-                onPress={() => createUser(email, password)}
+                onPress={() => checkPasswords(password, confirmPassword)}
               >
                 <Text className="text-xl font-bold text-white text-center">
                   Đăng ký
