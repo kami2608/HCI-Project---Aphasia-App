@@ -29,8 +29,7 @@ const Login = () => {
         navigation.navigate("Flashcard");
       })
       .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
+        alert("Sai tài khoản hoặc mật khẩu");
       });
   }
 
