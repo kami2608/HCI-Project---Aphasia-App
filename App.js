@@ -6,6 +6,9 @@ import { Login, Signup, Welcome } from "./screens";
 import Account from "./screens/Account";
 import Flashcard from "./screens/Flashcard";
 import Sentences from "./screens/Sentences";
+import Settings from "./screens/Settings";
+import Profile from "./screens/Profile";
+import ConfirmSettings from "./screens/ConfirmSettings";
 
 function HomeScreen() {
   return (
@@ -30,6 +33,9 @@ function App() {
         <Stack.Screen name="Welcome" component={Welcome} />
         <Stack.Screen name="Flashcard" component={Flashcard} />
         <Stack.Screen name="Sentences" component={Sentences} />
+        <Stack.Screen name="Settings" component={Settings} />
+        <Stack.Screen name="ConfirmSettings" component={ConfirmSettings} />
+        <Stack.Screen name="Profile" component={Profile} />
       </Stack.Navigator>
     </NavigationContainer>
   );
