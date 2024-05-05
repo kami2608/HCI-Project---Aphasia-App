@@ -8,46 +8,34 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useState } from "react";
+import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import * as React from "react";
-import { auth, db } from "../firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { FIREBASE_AUTH } from "../firebaseConfig";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 
 export default function Signup() {
-  const [email, setEmail] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const navigation = useNavigation();
+  const [email, setEmail] = useState("");
   const [password, setPass] = useState("");
   const [loading, setLoading] = useState(false);
+  const auth = FIREBASE_AUTH;
 
-  const checkPasswords = async (password, confirmPassword) => {
+  const signUp = async () => {
     setLoading(true);
-    if (password !== confirmPassword) {
-      alert("Mật khẩu không khớp!");
+    try {
+      console.log(email, ": ", password)
+      await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      navigation.navigate("Account");
+    } catch (error) {
+      console.log(error);
+      alert("Sign up failed: " + error.message);
+    } finally {
       setLoading(false);
-      return;
-    } else {
-      try {
-        console.log(email, ": ", password)
-        await createUserWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );     
-      } catch (error) {
-        console.log(error);
-        alert("Sign up failed: " + error.message);
-      }
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        navigation.navigate("Account");
-      } catch (error) {
-        alert("Sign in failed: " + error.message);
-      } finally {
-        setLoading(false);
-      }
     }
   };
 
@@ -92,8 +80,8 @@ export default function Signup() {
             <View className="bg-black/4 p-3 rounded-2xl w-full mb-3 border border-solid border-gray-400">
               <TextInput
                 className="text-xl"
-                onChangeText={setConfirmPassword}
-                value={confirmPassword}
+                onChangeText={setPass}
+                value={password}
                 placeholder="Nhập lại mật khẩu"
                 secureTextEntry={true}
                 keyboardType="default"
@@ -104,7 +92,7 @@ export default function Signup() {
             <View>
               <TouchableOpacity
                 className="w-full bg-sky-400 p-3 rounded-2xl mb-2 mt-4 border border-solid border-sky-700"
-                onPress={() => checkPasswords(password, confirmPassword)}
+                onPress={() => signUp()}
               >
                 <Text className="text-xl font-bold text-white text-center">
                   Đăng ký

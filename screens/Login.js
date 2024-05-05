@@ -9,31 +9,51 @@ import {
   Platform,
   useAnimatedValue,
 } from "react-native";
-import * as React from "react";
+import React, { useState } from "react";
+import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
-import { auth, db } from "../firebaseConfig";
-import { useState } from "react";
+import { FIREBASE_AUTH } from "../firebaseConfig";
 import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Login = () => {
   const navigation = useNavigation();
-  const [email, setEmail] = useState("");
-  const [password, setPass] = useState("");
+  const [email, setEmail] = useState('')
+  const [password, setPass] = useState('')
   const [loading, setLoading] = useState(false)
+  const auth = FIREBASE_AUTH
 
-  const signIn = async (email, password) => {
-    setLoading(true);
-    await signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        navigation.navigate("Flashcard");
-      })
-      .catch((error) => {
-        alert("Sai tài khoản hoặc mật khẩu");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+  // onAuthStateChanged(auth, (user) => {
+  //   if (user) {
+  //     navigation.navigate("Welcome")
+  //     const uid = user.uid;
+  //     AsyncStorage.setItem('userToken', uid);
+  //   } else {
+  //     console.log("No user")
+  //     AsyncStorage.removeItem('userToken')
+  //   }
+  // })
+
+  // async function checkUserSession() {
+  //   const userID = await AsyncStorage.getItem('userToken');
+  //   if (userID) {
+  //     console.log('User ID retrived from storage: ', userID);
+  //     navigation.navigate("Welcome")
+  //   }
+  // }
+
+  const login = async() => {
+    setLoading(true)
+    try{
+      console.log(email, ": ", password)
+      await signInWithEmailAndPassword(auth, email, password)
+      navigation.navigate("Flashcard")
+    } catch (error) {
+      console.log(error)
+      alert("Sai tài khoản hoặc mật khẩu")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -75,7 +95,7 @@ const Login = () => {
             <View>
               <TouchableOpacity
                 className="w-full bg-sky-400 p-3 rounded-2xl mb-2 mt-4 border border-solid border-sky-700"
-                onPress={() => signIn(email, password)}
+                onPress={() => login()}
               >
                 <Text className="text-xl font-bold text-white text-center">
                   Đăng nhập

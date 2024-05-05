@@ -19,8 +19,6 @@ import { Cards } from "../components/Cards";
 import axios from 'axios';
 import { auth, storage } from "../firebaseConfig";
 import { ref, getDownloadURL } from "firebase/storage";
-import Logout from "../components/Logout";
-import { set } from "firebase/database";
 
 
 export default function Flashcard() {
@@ -133,7 +131,13 @@ export default function Flashcard() {
           <Text className="text-xs text-black text-center">Tôi</Text>
         </TouchableOpacity>
 
-      <Logout/>
+        <TouchableOpacity
+          className="pr-4 flex flex-column items-center"
+          onPress={() => { navigation.navigate("Login") }}
+        >
+          <MaterialIcons name="logout" size={25} color="black" />
+          <Text className="text-xs text-black text-center">Đăng xuất</Text>
+        </TouchableOpacity>
 
       </View>
 
