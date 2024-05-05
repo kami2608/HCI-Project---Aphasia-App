@@ -14,7 +14,6 @@ import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import { FIREBASE_AUTH } from "../firebaseConfig";
 import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Login = () => {
   const navigation = useNavigation();
@@ -22,25 +21,6 @@ const Login = () => {
   const [password, setPass] = useState('')
   const [loading, setLoading] = useState(false)
   const auth = FIREBASE_AUTH
-
-  // onAuthStateChanged(auth, (user) => {
-  //   if (user) {
-  //     navigation.navigate("Welcome")
-  //     const uid = user.uid;
-  //     AsyncStorage.setItem('userToken', uid);
-  //   } else {
-  //     console.log("No user")
-  //     AsyncStorage.removeItem('userToken')
-  //   }
-  // })
-
-  // async function checkUserSession() {
-  //   const userID = await AsyncStorage.getItem('userToken');
-  //   if (userID) {
-  //     console.log('User ID retrived from storage: ', userID);
-  //     navigation.navigate("Welcome")
-  //   }
-  // }
 
   const login = async() => {
     setLoading(true)

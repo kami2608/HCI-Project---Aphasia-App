@@ -17,9 +17,8 @@ import AntDesign from "react-native-vector-icons/AntDesign";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { Cards } from "../components/Cards";
 import axios from 'axios';
-import { auth, storage } from "../firebaseConfig";
-import { ref, getDownloadURL } from "firebase/storage";
-
+import Logout from "../components/Logout";
+import { set } from "firebase/database";
 
 export default function Flashcard() {
   const navigation = useNavigation();
@@ -27,6 +26,7 @@ export default function Flashcard() {
   const [categoryNames, setCategoryNames] = useState([]);
   const [cardIds, setCardIds] = useState([]);
   const [cardNames, setCardNames] = useState([]);
+  const [cardEn, setCardEn] = useState([]);
   const [symbol, setSymbol] = useState([]);
   const [cardUrls, setCardUrls] = useState([]);
   const [categoryUrls, setCategoryUrls] = useState([]);
@@ -34,6 +34,7 @@ export default function Flashcard() {
   const [selectedTopic, setSelectedTopic] = useState(0);
   const [selectedCard, setSelectedCard] = useState([]);
   const [selectedCardName, setSelectedCardName] = useState([]);
+  const [selectedCardUrl, setSelectedCardUrl] = useState([]);
 
   // get all categories 
   useEffect(() => {
@@ -42,12 +43,12 @@ export default function Flashcard() {
       setCategoryNames(res.data.map(category => category.categoryName));
       setCategoryUrls(res.data.map(category => category.imgUrl));
     }).catch(err => {
-      
+      console.log(err);
     });
   }, []);
 
   useEffect(() => {
-    
+
   }, [cardIds]);
 
   // get cards by category
@@ -57,8 +58,9 @@ export default function Flashcard() {
       setSymbol(res.data.map(card => card.symbol));
       setCardNames(res.data.map(card => card.wordVi));
       setCardUrls(res.data.map(card => card.imgUrl));
+      setCardEn(res.data.map(card => card.wordEn));
     }).catch(err => {
-      
+      console.log(err);
     })
   }
 
@@ -69,7 +71,7 @@ export default function Flashcard() {
   }, [selectedTopic]);
 
   const getSentence = (sentence) => {
-
+    // TODO: get sentence from model
   }
 
 
@@ -92,25 +94,29 @@ export default function Flashcard() {
 
       {/* Picture to speak section */}
       <View className="w-full h-[35%] items-center">
-        {/* <Results/> */}
+
         <View className="flex flex-col items-center bg-orange-400 px-2 py-3">
           <View className="w-full h-[48%] flex flex-row justify-items my-1">
             {
-                [...Array(3)].map((_, index) => {
-                  const item = selectedCard[index];
-                  return (
-                    <TouchableOpacity
-                      onPress={() => { console.log(`image ${index + 1}`); }}
-                      className="w-[30%] h-[90%] mx-1.5"
-                    >
-                      <Image
-                        source={{ uri: item ? item : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s' }}
-                        resizeMode="contain"
-                        className="rounded-3xl flex-1"
-                      />
-                    </TouchableOpacity>
-                  )
-                })
+              [...Array(3)].map((_, index) => {
+                const item = selectedCardUrl[index];
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => {
+                      setSelectedCardUrl(selectedCardUrl.filter(url => url !== item));
+                      setSelectedCard(selectedCard.filter(card => card !== cardEn[index]));
+                    }}
+                    className="w-[30%] h-[90%] mx-1.5"
+                  >
+                    <Image
+                      source={{ uri: item ? item : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s' }}
+                      resizeMode="contain"
+                      className="rounded-3xl flex-1"
+                    />
+                  </TouchableOpacity>
+                )
+              })
             }
           </View>
 
@@ -121,35 +127,37 @@ export default function Flashcard() {
               <Text className="text-sm text-black text-center">Xóa</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => {
-                console.log("image 4");
-              }}
-              className="w-[30%] h-[90%] mx-1.5"
-            >
-              <Image
-                source={{
-                  url: "https://firebasestorage.googleapis.com/v0/b/hci-aphasia.appspot.com/o/10%2Fbear.jpg?alt=media&token=97ef57b5-bf44-4747-b00c-aa8b1bd60c19",
-                }}
-                // resizeMode="contain"
-                className=" rounded-3xl flex-1"
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                console.log("image 5");
-              }}
-              className="w-[30%] h-[90%] mx-1.5"
-            >
-              <Image
-                source={{
-                  url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-                }}
-                // resizeMode="contain"
-                className="rounded-3xl flex-1"
-              />
-            </TouchableOpacity>
+            {
+              [...Array(2)].map((_, index) => {
+                
+                let item;
+                if (selectedCardUrl.length === 5) {
+                  item = [selectedCardUrl[3], selectedCardUrl[4]];
+                } else if (selectedCardUrl.length === 4) {
+                  item = [selectedCardUrl[3], undefined];
+                } else {
+                  item = [undefined, undefined];
+                }
+                
+                let uri = item[index];
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => {
+                      setSelectedCardUrl(selectedCardUrl.filter(url => url !== uri));
+                      setSelectedCard(selectedCard.filter(card => card !== cardEn[index]));
+                    }}
+                    className="w-[30%] h-[90%] mx-1.5"
+                  >
+                    <Image
+                      source={{ uri: uri ? uri : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s' }}
+                      resizeMode="contain"
+                      className="rounded-3xl flex-1"
+                    />
+                  </TouchableOpacity>
+                );
+              })
+            }
 
             <TouchableOpacity className="p-2 mr-3 mb-3">
               <FontAwesome name="volume-up" size={30} color="black" />
@@ -162,11 +170,22 @@ export default function Flashcard() {
       {/* Cards displayed */}
       <View className="w-full h-[34%] bg-white">
         <FlatList
-          data={cardUrls}
-          renderItem={({ item }) => (
+          data={cardUrls.filter(url => !selectedCardUrl.includes(url))}
+          renderItem={({ item, index }) => (
             <TouchableOpacity
               onPress={() => {
-                console.log("touch card");
+                if (selectedCard.length >= 5) {
+                  alert("Chỉ có thể chọn tối đa 5 từ");
+                } else {
+                  console.log(selectedCard);
+                  console.log(cardEn[index]);
+                  console.log(cardIds);
+                  console.log(cardNames);
+                  setCardIds(cardIds.filter(id => id !== cardIds[index]));
+                  setCardNames(cardNames.filter(name => name !== cardNames[index]));
+                  setSelectedCard(selected => [...selected, cardEn[index]]);
+                  setSelectedCardUrl(selected => [...selected, item]);
+                }
               }}
               className="p-2 w-1/3"
             >
@@ -234,7 +253,7 @@ export default function Flashcard() {
         >
           <Image
             source={{
-              url: "https://upanh123.com/wp-content/uploads/2021/05/hinh-nen-mau-vang25.jpg",
+              uri: "https://upanh123.com/wp-content/uploads/2021/05/hinh-nen-mau-vang25.jpg",
             }}
             className="h-full w-full"
             resizeMode="cover"
@@ -246,7 +265,7 @@ export default function Flashcard() {
           showsHorizontalScrollIndicator={false}
           className="flex-1 flex-row"
         >
-          
+
           {categoryUrls.map((url, index) => (
             <TouchableOpacity
               key={index}
@@ -257,7 +276,7 @@ export default function Flashcard() {
               className={`${selectedTopic === index ? "border-2 border-blue-400" : ""}`}
             >
               <Image
-                source={{ url: url }}
+                source={{ uri: url }}
                 className="h-[100%] w-[100]"
                 resizeMode="cover" />
             </TouchableOpacity>
