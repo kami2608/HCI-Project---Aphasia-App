@@ -32,99 +32,54 @@ export default function Flashcard() {
   const [symbol, setSymbol] = useState([]);
   const [cardUrls, setCardUrls] = useState([]);
   const [categoryUrls, setCategoryUrls] = useState([]);
-  const route = useRoute();
   const scrollViewRef = useRef();
   const [selectedTopic, setSelectedTopic] = useState(0);
+  const [selectedCard, setSelectedCard] = useState([]);
+  const [selectedCardName, setSelectedCardName] = useState([]);
 
   // get all categories 
   useEffect(() => {
     axios.get('http://192.168.0.102:8080/api/v1/cards/category').then(res => {
       setCategoryIds(res.data.map(category => category.categoryId));
       setCategoryNames(res.data.map(category => category.categoryName));
+      setCategoryUrls(res.data.map(category => category.imgUrl));
     }).catch(err => {
-      console.log(err);
+      
     });
   }, []);
-  // get category images
+
   useEffect(() => {
-      getCategoryImages();
-      console.log(categoryUrls);
-  }, []);
+    
+  }, [cardIds]);
 
   // get cards by category
-  const getCardName = (categoryId) => {
-    axios.get(`http://192.168.0.102:8080/api/v1/cards/category/${categoryId}`).then(res => {
-      console.log(res.data);
+  const getCard = async (categoryId) => {
+    await axios.get(`http://192.168.0.102:8080/api/v1/cards/category/${categoryId}`).then(res => {
       setCardIds(res.data.map(card => card.symbolId));
       setSymbol(res.data.map(card => card.symbol));
       setCardNames(res.data.map(card => card.wordVi));
+      setCardUrls(res.data.map(card => card.imgUrl));
     }).catch(err => {
-      console.log(err);
+      
     })
   }
-  // get cards image from firebase storage
-  const getCards = (categoryId, imgSymbols) => {
-    const promises = imgSymbols.map(async imgSymbol => {
-      const imageRef = ref(storage, `${categoryId}/${imgSymbol}.jpg`);
-      return getDownloadURL(imageRef).then((url) => {
-        setCardUrls([...cardUrls, url]);
-      })
-    });
 
-    Promise.all(promises)
-      .then((urls) => {
-        console.log(urls);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  };
+  useEffect(() => {
+    console.log(selectedTopic, categoryIds[selectedTopic]);
+    getCard(categoryIds[selectedTopic]);
+    console.log(selectedCard);
+  }, [selectedTopic]);
 
-  // get category images from firebase storage
-  const getCategoryImages = () => {
-    const promises = categoryIds.map(categoryId => {
-      const imageRef = ref(storage, `category/${categoryId}.jpg`);
-      return getDownloadURL(imageRef);
-    });
+  const getSentence = (sentence) => {
 
-    Promise.all(promises)
-      .then(urls => {
-        setCategoryUrls(urls);
-      })
-      .catch(error => {
-        console.error('Error fetching image URLs: ', error);
-      });
   }
-  
 
-  const images = [
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-  ];
-  
-  // if(route.params?.selectedTopic) setSelectedTopic(route.params?.selectedTopic);
-  // console.log(route.params?.selectedTopic + "hihi");
-  // console.log(selectedTopic + "hi");
+
   return (
     <SafeAreaView className="flex-1">
       {/* <StatusBar style="light" /> */}
-
       <View className="w-full h-[6%] bg-white rounded-xl flex-row justify-between items-center">
 
-      
         <TouchableOpacity
           className="pl-4 flex flex-column items-center"
           onPress={() => navigation.navigate("Profile")}
@@ -133,7 +88,7 @@ export default function Flashcard() {
           <Text className="text-xs text-black text-center">Tôi</Text>
         </TouchableOpacity>
 
-      <Logout/>
+        <Logout />
 
       </View>
 
@@ -142,45 +97,23 @@ export default function Flashcard() {
         {/* <Results/> */}
         <View className="flex flex-col items-center bg-orange-400 px-2 py-3">
           <View className="w-full h-[48%] flex flex-row justify-items my-1">
-            <TouchableOpacity
-              onPress={() => {
-                console.log("image 1");
-              }}
-              className="w-[30%] h-[90%] mx-1.5"
-            >
-              <Image
-                source={{
-                  url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-                }}
-                className="rounded-3xl flex-1"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                console.log("image 2");
-              }}
-              className="w-[30%] h-[90%] mx-1.5"
-            >
-              <Image
-                source={{
-                  url: "https://firebasestorage.googleapis.com/v0/b/hci-aphasia.appspot.com/o/10%2Fbear.jpg?alt=media&token=97ef57b5-bf44-4747-b00c-aa8b1bd60c19",
-                }}
-                className="rounded-3xl flex-1"
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                console.log("image 3");
-              }}
-              className="w-[30%] h-[90%] mx-1.5"
-            >
-              <Image
-                source={{
-                  url: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s",
-                }}
-                className="rounded-3xl flex-1"
-              />
-            </TouchableOpacity>
+            {
+                [...Array(3)].map((_, index) => {
+                  const item = selectedCard[index];
+                  return (
+                    <TouchableOpacity
+                      onPress={() => { console.log(`image ${index + 1}`); }}
+                      className="w-[30%] h-[90%] mx-1.5"
+                    >
+                      <Image
+                        source={{ uri: item ? item : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s' }}
+                        resizeMode="contain"
+                        className="rounded-3xl flex-1"
+                      />
+                    </TouchableOpacity>
+                  )
+                })
+            }
           </View>
 
           {/* Speaking section */}
@@ -231,7 +164,7 @@ export default function Flashcard() {
       {/* Cards displayed */}
       <View className="w-full h-[34%] bg-white">
         <FlatList
-          data={images}
+          data={cardUrls}
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => {
@@ -248,11 +181,10 @@ export default function Flashcard() {
           )}
           numColumns={3}
           showsVerticalScrollIndicator={false}
-        // keyExtractor={(_, index) => index.toString()}
         />
       </View>
 
-      {/* Switch back button */}
+      {/* Navigation button */}
       <View className="w-full h-[11%] flex flex-row items-center justify-between bg-white px-4 border-t-2 border-gray-300">
         <TouchableOpacity
           onPress={() => {
@@ -279,14 +211,13 @@ export default function Flashcard() {
 
         <TouchableOpacity
           onPress={() => {
-            // if (selectedTopic < images.length - 2) {
-            //   setSelectedTopic(selectedTopic + 1);
-            //   scrollViewRef.current?.scrollTo({
-            //     x: (selectedTopic + 1) * 90,
-            //     animated: true,
-            //   });
-            // }
-            
+            if (selectedTopic < categoryIds.length - 1) {
+              setSelectedTopic(selectedTopic + 1);
+              scrollViewRef.current?.scrollTo({
+                x: (selectedTopic + 1) * 90,
+                animated: true,
+              });
+            }
           }}
           className="flex-1 items-end justify-center"
         >
@@ -338,15 +269,16 @@ export default function Flashcard() {
             <TouchableOpacity
               key={index}
               onPress={() => {
-                setSelectedTopic(categoryIds[index]);
+                setSelectedTopic(index);
+
               }}
-              className={`${selectedTopic === categoryIds[index]} ? "border-2 border-blue-400" : ""}`}
-              >
+              className={`${selectedTopic === index ? "border-2 border-blue-400" : ""}`}
+            >
               <Image
                 source={{ url: url }}
                 className="h-[100%] w-[100]"
-                resizeMode="cover"/>
-              </TouchableOpacity>
+                resizeMode="cover" />
+            </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
