@@ -8,7 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Icon from "react-native-vector-icons/AntDesign";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -17,14 +17,10 @@ import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { auth, db } from '../firebaseConfig';
-import { ref, set } from "firebase/database";
 import { doc, setDoc, collection, addDoc } from "firebase/firestore";
-import axios from "axios";
 
 
 export default function Account() {
-  const navigation = useNavigation();
-
   // Format the date to dd/mm/yyyy
   const formatDate = (date) => {
     const day = date.getDate().toString().padStart(2, "0");
@@ -32,7 +28,20 @@ export default function Account() {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
-
+  const defaultForm = {
+    name: "",
+    email: auth.currentUser,
+    phone: "",
+    address: "",
+    dob: formatDate(new Date()),
+    yearOfStroke: "",
+    emergencyPhone: "",
+  };
+  const navigation = useNavigation();
+  const [form, setForm] = useState(defaultForm);
+  const [isTextInputFocused, setTextInputFocused] = useState(false);
+  const [show, setShow] = useState(false);
+  
   const getValidDate = (dateString) => {
     const parts = dateString.split("/");
     if (parts.length === 3) {
@@ -46,20 +55,6 @@ export default function Account() {
     }
     return new Date(); // return current date if parsing fails
   };
-
-  const defaultForm = {
-    name: "",
-    email: auth.currentUser.email,
-    phone: "",
-    address: "",
-    dob: formatDate(new Date()),
-    yearOfStroke: "",
-    emergencyPhone: "",
-  };
-
-  const [form, setForm] = useState(defaultForm);
-  const [isTextInputFocused, setTextInputFocused] = useState(false);
-  const [show, setShow] = useState(false);
 
   const handleFocus = () => setTextInputFocused(true);
   const handleBlur = () => setTextInputFocused(false);
@@ -94,8 +89,18 @@ export default function Account() {
       }
 
       try {
-        const docRef = doc(FIREBASE_DB, "users", email);
-        await setDoc(docRef, form);
+        // console.log(form.name, form.email);
+        // const docRef = doc(db, "users", email);
+        // await setDoc(docRef, form);
+        // // Read the document
+        // const docSnap = await getDoc(docRef);
+
+        // if (docSnap.exists()) {
+        //   console.log("Document data:", docSnap.data());
+        // } else {
+        //   // doc.data() will be undefined in this case
+        //   console.log("No such document!");
+        // }
         navigation.navigate("Flashcard");
         console.log("Saving data successfully!");
       } catch (error) {
@@ -134,7 +139,6 @@ export default function Account() {
                 placeholderTextColor="#CCCCCC"
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                onChangeText={(text) => setName(text)}
               />
             </View>
 
@@ -150,7 +154,6 @@ export default function Account() {
                 onBlur={handleBlurDate}
                 placeholder="dd/mm/yyyy"
                 placeholderTextColor="#CCCCCC"
-                // editable={false}
               />
               {show && (
                 <DateTimePicker
@@ -176,7 +179,6 @@ export default function Account() {
                 placeholderTextColor="#CCCCCC"
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                onChangeText={(text) => setPhone(text)}
               />
             </View>
 
@@ -197,7 +199,6 @@ export default function Account() {
                 placeholderTextColor="#CCCCCC"
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                onChangeText={(text) => setRelativePhone(text)}
               />
             </View>
 
@@ -214,7 +215,6 @@ export default function Account() {
                 placeholderTextColor="#CCCCCC"
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                onChangeText={(text) => setAddress(text)}
               />
               
 
@@ -234,7 +234,6 @@ export default function Account() {
                 placeholderTextColor="#CCCCCC"
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                onChangeText={(text) => setStartYear(text)}
               />
             </View>
 

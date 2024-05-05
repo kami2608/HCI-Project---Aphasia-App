@@ -10,31 +10,29 @@ import {
   useAnimatedValue,
 } from "react-native";
 import * as React from "react";
-import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import { auth, db } from "../firebaseConfig";
 import { useState } from "react";
 import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Login = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [password, setPass] = useState("");
   const [loading, setLoading] = useState(false)
 
-  const signIn = (email, password) => {
+  const signIn = async (email, password) => {
     setLoading(true);
     await signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        // Signed in
         const user = userCredential.user;
         navigation.navigate("Flashcard");
       })
       .catch((error) => {
         alert("Sai tài khoản hoặc mật khẩu");
-      }.finally {
-        setLoading(false)
+      })
+      .finally(() => {
+        setLoading(false);
       });
   }
 
@@ -72,7 +70,6 @@ const Login = () => {
                 placeholderTextColor="#CCCCCC"
                 onChangeText={setPass}
                 secureTextEntry
-                onChangeText={(text) => setPassword(text)}
               />
             </View>
             <View>

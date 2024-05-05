@@ -11,19 +11,16 @@ import {
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import * as React from "react";
-import { auth } from "../firebaseConfig";
+import { auth, db } from "../firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigation = useNavigation();
-  const [email, setEmail] = useState("");
   const [password, setPass] = useState("");
   const [loading, setLoading] = useState(false);
-  const [confirmPassword, setConfirmPassword] = useState("");
 
   const checkPasswords = async (password, confirmPassword) => {
     setLoading(true);
@@ -38,11 +35,16 @@ export default function Signup() {
           auth,
           email,
           password
-        );
-        navigation.navigate("Account");
+        );     
       } catch (error) {
         console.log(error);
         alert("Sign up failed: " + error.message);
+      }
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        navigation.navigate("Account");
+      } catch (error) {
+        alert("Sign in failed: " + error.message);
       } finally {
         setLoading(false);
       }
@@ -72,6 +74,7 @@ export default function Signup() {
                 value={email}
                 placeholder="Email"
                 placeholderTextColor="#CCCCCC"
+                onChangeText={setEmail}
               />
             </View>
             <View className="bg-black/4 p-3 rounded-2xl w-full border border-solid border-gray-400">
@@ -84,20 +87,18 @@ export default function Signup() {
                 keyboardType="default"
                 autoCapitalize="none"
                 autoComplete="false"
-                onChangeText={(text) => setPassword(text)}
               />
             </View>
             <View className="bg-black/4 p-3 rounded-2xl w-full mb-3 border border-solid border-gray-400">
               <TextInput
                 className="text-xl"
-                onChangeText={setPass}
-                value={password}
+                onChangeText={setConfirmPassword}
+                value={confirmPassword}
                 placeholder="Nhập lại mật khẩu"
                 secureTextEntry={true}
                 keyboardType="default"
                 autoCapitalize="none"
                 autoComplete="false"
-                onChangeText={(text) => setConfirmPassword(text)}
               />
             </View>
             <View>
