@@ -8,10 +8,11 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { useState } from "react";
+import { StatusBar } from "expo-status-bar";
 import * as React from "react";
 import { auth } from "../firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
-import { useState } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 
 export default function Signup() {
@@ -19,30 +20,34 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigation = useNavigation();
-  
-  const checkPasswords = (password, confirmPassword) => {
-    if (password != confirmPassword) {
-      alert("Mật khẩu không khớp");
+  const [email, setEmail] = useState("");
+  const [password, setPass] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const checkPasswords = async (password, confirmPassword) => {
+    setLoading(true);
+    if (password !== confirmPassword) {
+      alert("Mật khẩu không khớp!");
+      setLoading(false);
+      return;
     } else {
-      createUser(email, password);
-    }
-  }
-  
-  const createUser = (email, password) => {
-    
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user;
+      try {
+        console.log(email, ": ", password)
+        await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
         navigation.navigate("Account");
-        // ...
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        // ..
-      });
-  }
+      } catch (error) {
+        console.log(error);
+        alert("Sign up failed: " + error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -64,26 +69,34 @@ export default function Signup() {
             <View className="bg-black/4 p-3 rounded-2xl w-full border border-solid border-gray-400">
               <TextInput
                 className="text-xl"
+                value={email}
                 placeholder="Email"
                 placeholderTextColor="#CCCCCC"
-                onChangeText={(text) => setEmail(text)}
               />
             </View>
             <View className="bg-black/4 p-3 rounded-2xl w-full border border-solid border-gray-400">
               <TextInput
                 className="text-xl"
+                onChangeText={setPass}
+                value={password}
                 placeholder="Mật khẩu"
-                placeholderTextColor="#CCCCCC"
-                secureTextEntry
+                secureTextEntry={true}
+                keyboardType="default"
+                autoCapitalize="none"
+                autoComplete="false"
                 onChangeText={(text) => setPassword(text)}
               />
             </View>
             <View className="bg-black/4 p-3 rounded-2xl w-full mb-3 border border-solid border-gray-400">
               <TextInput
                 className="text-xl"
+                onChangeText={setPass}
+                value={password}
                 placeholder="Nhập lại mật khẩu"
-                placeholderTextColor="#CCCCCC"
-                secureTextEntry
+                secureTextEntry={true}
+                keyboardType="default"
+                autoCapitalize="none"
+                autoComplete="false"
                 onChangeText={(text) => setConfirmPassword(text)}
               />
             </View>

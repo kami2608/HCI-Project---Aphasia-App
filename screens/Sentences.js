@@ -182,6 +182,8 @@ import { Results } from "../components/Results";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { Cards } from "../components/Cards";
+import { FIREBASE_AUTH } from "../firebaseConfig";
+import { signOut } from "firebase/auth";
 
 export default function Sentences() {
   const navigation = useNavigation();
@@ -209,6 +211,18 @@ export default function Sentences() {
   // if(route.params?.selectedTopic) setSelectedTopic(route.params?.selectedTopic);
   console.log(route.params?.selectedTopic + "hihi");
   console.log(selectedTopic + "hi");
+
+  const auth = FIREBASE_AUTH;
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      navigation.navigate("Login")
+      console.log("User signed out successfully");
+    } catch (error) {
+      console.log("Sign out error: ", error);
+    }
+  }
+
   return (
     <SafeAreaView className="flex-1">
       {/* <StatusBar style="light" /> */}
@@ -219,13 +233,14 @@ export default function Sentences() {
           className="pl-4 flex flex-column items-center"
           onPress={() => navigation.navigate("Profile")}
         >
-          <FontAwesome name="user-circle-o" size={25} color="black" />
+          <FontAwesome name="user-circle-o" size={40} color="black" />
           <Text className="text-xs text-black text-center">Tôi</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           className="pr-4 flex flex-column items-center"
-          onPress={() => { navigation.navigate("Login") }}
+          // onPress={() => { logout() }}
+          onPress={() => navigation.navigate("Profile")}
         >
           <MaterialIcons name="logout" size={25} color="black" />
           <Text className="text-xs text-black text-center">Đăng xuất</Text>

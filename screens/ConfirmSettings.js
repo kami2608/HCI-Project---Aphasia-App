@@ -8,7 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -16,9 +16,36 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 
 import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
+import { FIREBASE_AUTH, FIREBASE_DB } from "../firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function ConfirmSettings() {
   const navigation = useNavigation();
+  const [userData, setUserData] = useState(null);
+  
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const userId = FIREBASE_AUTH.currentUser.email; // This should dynamically set, perhaps passed via props or context.
+      try {
+        const docRef = doc(FIREBASE_DB, "users", userId);
+        const docSnapshot = await getDoc(docRef);
+        if (docSnapshot.exists) {
+          setUserData(docSnapshot.data());
+        } else {
+          console.log("No user data found!");
+        }
+      } catch (error) {
+        console.error("Error fetching user data: ", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  if (!userData) {
+    return <Text>Loading...</Text>; 
+  }
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: "white" }}
@@ -51,7 +78,7 @@ export default function ConfirmSettings() {
             <View className="bg-black/4 p-1 pl-5 rounded-3xl w-full mb-2 border border-solid border-gray-400">
               <TextInput
                 className="text-lg"
-                placeholder="Nguyễn Văn A"
+                value={userData.name}
                 placeholderTextColor="black"
                 readOnly
               />
@@ -64,7 +91,7 @@ export default function ConfirmSettings() {
             <View className="bg-black/4 p-1 pl-5 rounded-3xl w-full mb-2 border border-solid border-gray-400">
               <TextInput
                 className="text-lg"
-                placeholder="01/12/2000"
+                value={userData.dob}
                 placeholderTextColor="black"
                 readOnly
               />
@@ -77,7 +104,7 @@ export default function ConfirmSettings() {
             <View className="bg-black/4 p-1 pl-5 rounded-3xl w-full mb-2 border border-solid border-gray-400">
               <TextInput
                 className="text-lg"
-                placeholder="0868809172"
+                value={userData.phone}
                 placeholderTextColor="black"
                 readOnly
               />
@@ -90,7 +117,7 @@ export default function ConfirmSettings() {
             <View className="bg-black/4 p-1 pl-5 rounded-3xl w-full mb-2 border border-solid border-gray-400">
               <TextInput
                 className="text-lg"
-                placeholder="0578643246"
+                value={userData.emergencyPhone}
                 placeholderTextColor="black"
                 readOnly
               />
@@ -103,7 +130,7 @@ export default function ConfirmSettings() {
             <View className="bg-black/4 p-1 pl-5 rounded-3xl w-full mb-2 border border-solid border-gray-400">
               <TextInput
                 className="text-lg"
-                placeholder="144 Xuân Thủy, Cầu Giấy"
+                value={userData.address}
                 placeholderTextColor="black"
                 readOnly
               />
@@ -116,7 +143,7 @@ export default function ConfirmSettings() {
             <View className="bg-black/4 p-1 pl-5 rounded-3xl w-full mb-2 border border-solid border-gray-400">
               <TextInput
                 className="text-lg"
-                placeholder="2024"
+                value={userData.yearOfStroke}
                 placeholderTextColor="black"
                 readOnly
               />

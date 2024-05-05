@@ -9,20 +9,23 @@ import {
   Platform,
   useAnimatedValue,
 } from "react-native";
-import React from "react";
+import * as React from "react";
+import { StatusBar } from "expo-status-bar";
 import { useNavigation } from "@react-navigation/native";
 import { auth, db } from "../firebaseConfig";
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Login = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+  const [loading, setLoading] = useState(false)
 
   const signIn = (email, password) => {
-    signInWithEmailAndPassword(auth, email, password)
+    setLoading(true);
+    await signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
@@ -30,6 +33,8 @@ const Login = () => {
       })
       .catch((error) => {
         alert("Sai tài khoản hoặc mật khẩu");
+      }.finally {
+        setLoading(false)
       });
   }
 
@@ -53,16 +58,19 @@ const Login = () => {
             <View className="bg-black/4 p-3 rounded-2xl w-full border border-solid border-gray-400">
               <TextInput
                 className="text-xl"
+                value={email}
                 placeholder="Email"
                 placeholderTextColor="#CCCCCC"
-                onChangeText={(text) => setEmail(text)}
+                onChangeText={setEmail}
               />
             </View>
             <View className="bg-black/4 p-3 rounded-2xl w-full mb-3 border border-solid border-gray-400">
               <TextInput
                 className="text-xl"
+                value={password}
                 placeholder="Mật khẩu"
                 placeholderTextColor="#CCCCCC"
+                onChangeText={setPass}
                 secureTextEntry
                 onChangeText={(text) => setPassword(text)}
               />

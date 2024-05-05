@@ -9,7 +9,7 @@ import {
   Platform,
   Button,
 } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AntDesignIcon from "react-native-vector-icons/AntDesign";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
@@ -17,10 +17,40 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 import { StatusBar } from "expo-status-bar";
-import { useNavigation } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
+import { FIREBASE_AUTH, FIREBASE_DB } from "../firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function Profile() {
   const navigation = useNavigation();
+  const [userData, setUserData] = useState(null);
+  const isFocused = useIsFocused();
+  
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const userId = FIREBASE_AUTH.currentUser.email; // This should dynamically set, perhaps passed via props or context.
+      try {
+        const docRef = doc(FIREBASE_DB, "users", userId);
+        const docSnapshot = await getDoc(docRef);
+        if (docSnapshot.exists) {
+          setUserData(docSnapshot.data());
+        } else {
+          console.log("No user data found!");
+        }
+      } catch (error) {
+        console.error("Error fetching user data: ", error);
+      }
+    };
+
+    if (isFocused) {
+      fetchUserData();
+    }
+  }, [isFocused]);
+
+  if (!userData) {
+    return <Text>Loading...</Text>; 
+  }
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: "white" }}
@@ -46,23 +76,23 @@ export default function Profile() {
             <AntDesignIcon name="idcard" size={70} color="black" />
             <View className="flex ml-2">
               <Text className="text-white text-3xl font-bold">
-                Nguyễn Văn A
+                {userData.name}
               </Text>
-              <Text className="text-white text-lg">6 năm với Aphasia</Text>
+              <Text className="text-white text-lg">{2024 - userData.yearOfStroke} năm với Aphasia</Text>
             </View>
           </View>
 
           <View className="flex ml-10 mt-10 mr-auto">
               <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
                 <FontAwesome name="birthday-cake" size={35} color="black" />
-                <Text className="text-2xl text-white ml-1"> 01/12/2000 </Text>
+                <Text className="text-2xl text-white ml-1"> {userData.dob} </Text>
               </View>
             </View>
 
             <View className="flex ml-10 mt-2 mr-auto">
               <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
                 <Ionicons name="call" size={35} color="black" />
-                <Text className="text-2xl text-white ml-1"> 0868809172 </Text>
+                <Text className="text-2xl text-white ml-1"> {userData.phone} </Text>
               </View>
             </View>
 
@@ -70,14 +100,14 @@ export default function Profile() {
             <View className="flex ml-10 mt-2 mr-auto">
               <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
               <MaterialCommunityIcons name="card-account-phone-outline" size={35} color="black" />
-                <Text className="text-2xl text-white ml-1"> 0578643246 </Text>
+                <Text className="text-2xl text-white ml-1"> {userData.emergencyPhone} </Text>
               </View>
             </View>
 
             <View className="flex ml-10 mt-2 mb-5 mr-auto">
               <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
               <Ionicons name="location" size={35} color="black" />
-                <Text className="text-2xl text-white ml-1"> Số 1, Đồng Tâm, Hai Bà Trưng, Hà Nội </Text>
+                <Text className="text-2xl text-white ml-1"> {userData.address} </Text>
               </View>
             </View>
 
