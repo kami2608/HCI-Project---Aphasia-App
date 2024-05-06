@@ -9,70 +9,132 @@ import {
   ScrollView,
   FlatList,
 } from "react-native";
-import Icon from "react-native-vector-icons/Feather";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { Results } from "../components/Results";
+import { useNavigation } from "@react-navigation/native";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import { Cards } from "../components/Cards";
 import axios from 'axios';
 import Logout from "../components/Logout";
-import { set } from "firebase/database";
+import { translate, speak} from 'google-translate-api-x';
 
 export default function Flashcard() {
   const navigation = useNavigation();
-  const [categoryIds, setCategoryIds] = useState([]);
-  const [categoryNames, setCategoryNames] = useState([]);
-  const [cardIds, setCardIds] = useState([]);
-  const [cardNames, setCardNames] = useState([]);
-  const [cardEn, setCardEn] = useState([]);
-  const [symbol, setSymbol] = useState([]);
-  const [cardUrls, setCardUrls] = useState([]);
-  const [categoryUrls, setCategoryUrls] = useState([]);
   const scrollViewRef = useRef();
   const [selectedTopic, setSelectedTopic] = useState(0);
   const [selectedCard, setSelectedCard] = useState([]);
-  const [selectedCardName, setSelectedCardName] = useState([]);
-  const [selectedCardUrl, setSelectedCardUrl] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [cards, setCards] = useState([]);
 
   // get all categories 
   useEffect(() => {
     axios.get('http://192.168.0.102:8080/api/v1/cards/category').then(res => {
-      setCategoryIds(res.data.map(category => category.categoryId));
-      setCategoryNames(res.data.map(category => category.categoryName));
-      setCategoryUrls(res.data.map(category => category.imgUrl));
+      setCategories(res.data.map(category => ({
+        id: category.categoryId,
+        name: category.categoryName,
+        url: category.imgUrl
+      })));
     }).catch(err => {
       console.log(err);
     });
   }, []);
 
-  useEffect(() => {
-
-  }, [cardIds]);
 
   // get cards by category
   const getCard = async (categoryId) => {
     await axios.get(`http://192.168.0.102:8080/api/v1/cards/category/${categoryId}`).then(res => {
-      setCardIds(res.data.map(card => card.symbolId));
-      setSymbol(res.data.map(card => card.symbol));
-      setCardNames(res.data.map(card => card.wordVi));
-      setCardUrls(res.data.map(card => card.imgUrl));
-      setCardEn(res.data.map(card => card.wordEn));
+      setCards(res.data.map(card => ({
+        id: card.cardId,
+        name: card.wordVi,
+        en: card.wordEn,
+        symbol: card.symbol,
+        url: card.imgUrl
+      })))
     }).catch(err => {
       console.log(err);
     })
   }
 
+  // display all cards of a category
   useEffect(() => {
-    console.log(selectedTopic, categoryIds[selectedTopic]);
-    getCard(categoryIds[selectedTopic]);
-    console.log(selectedCard);
-  }, [selectedTopic]);
+    if (categories.length > 0) {
+      getCard(categories[selectedTopic].id);
+      // getCard(categories[selectedTopic].id);
+    }
+  }, [selectedTopic, categories]);
 
-  const getSentence = (sentence) => {
-    // TODO: get sentence from model
+
+  // get full sentence with model
+  const handleSentence = async () => {
+    let sentence;
+    const string = selectedCard.map(card => card.en).join(' ');
+    await query({ "inputs": string }).then((response) => {
+      // console.log(response);
+      sentence = response[0].generated_text;
+    });
+    try {
+      const translation = await translate(sentence, { from: 'en', to: 'vi' });
+      console.log(translation);
+      sentence = translation.text;
+    } catch (error) {
+      console.error('An error occurred:', error);
+    }
+    // try {
+    //   const audio = await speak(sentence, 'vi');
+    //   const fileUri = FileSystem.documentDirectory + 'sentence.mp3';
+    //   await FileSystem.writeAsStringAsync(fileUri, audio, { encoding: FileSystem.EncodingType.Base64 });
+    //   // Play the audio file
+    //   const sound = new Sound(fileUri, '', (error) => {
+    //     if (error) {
+    //       console.error('Failed to load the sound', error);
+    //     } else {
+    //       sound.play((success) => {
+    //         if (!success) {
+    //           console.error('Sound did not play successfully');
+    //         }
+    //       });
+    //     }
+    //   });
+    // } catch (error) {
+    //   console.error('An error occurred:', error); 
+    // }
   }
+  
+
+  // query model
+  async function query(data, retries = 10) {
+    const url = new URL("https://api-inference.huggingface.co/models/grammarly/coedit-large");
+    url.searchParams.append('wait_for_model', 'true');
+    console.log(data.inputs)
+    const requestBody = {
+      inputs: "Fix the grammar: " + data.inputs,
+    };
+    try {
+      const response = await fetch(
+        url.toString(),
+        {
+          headers: { Authorization: `Bearer ${process.env.REACT_APP_MODEL_API_KEY}` },
+          method: "POST",
+          body: JSON.stringify(requestBody),
+        }
+      );
+      const result = await response.json();
+      if (result.error && result.error.startsWith("Model")) {
+        // wait for the model and retry if the model is loading
+        await new Promise(resolve => setTimeout(resolve, result.estimated_time * 1000));
+        retries--;
+      } else {
+        return result;
+      }
+    } catch (error) {
+      // retry if there's an error
+      retries--;
+      if (retries === 0) throw error;
+    }
+  }
+
+  const deleteSelected = () => {
+    setSelectedCard([]);
+  }
+
 
 
   return (
@@ -99,18 +161,17 @@ export default function Flashcard() {
           <View className="w-full h-[48%] flex flex-row justify-items my-1">
             {
               [...Array(3)].map((_, index) => {
-                const item = selectedCardUrl[index];
+                const item = selectedCard[index];
                 return (
                   <TouchableOpacity
                     key={index}
                     onPress={() => {
-                      setSelectedCardUrl(selectedCardUrl.filter(url => url !== item));
-                      setSelectedCard(selectedCard.filter(card => card !== cardEn[index]));
+                      setSelectedCard(selectedCard.filter(card => card !== item));
                     }}
                     className="w-[30%] h-[90%] mx-1.5"
                   >
                     <Image
-                      source={{ uri: item ? item : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s' }}
+                      source={{ uri: item ? item.url : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s' }}
                       resizeMode="contain"
                       className="rounded-3xl flex-1"
                     />
@@ -122,44 +183,51 @@ export default function Flashcard() {
 
           {/* Speaking section */}
           <View className="w-full h-[48%] flex flex-row justify-between items-end">
-            <TouchableOpacity className="p-2 ml-3 mb-3">
+            <TouchableOpacity
+              onPress={deleteSelected}
+              className="p-2 ml-3 mb-3"
+            >
               <AntDesign name="delete" size={30} color="black" />
               <Text className="text-sm text-black text-center">Xóa</Text>
             </TouchableOpacity>
 
             {
               [...Array(2)].map((_, index) => {
-                
                 let item;
-                if (selectedCardUrl.length === 5) {
-                  item = [selectedCardUrl[3], selectedCardUrl[4]];
-                } else if (selectedCardUrl.length === 4) {
-                  item = [selectedCardUrl[3], undefined];
+                if (selectedCard.length <= 3) {
+                  item = undefined;
+                } else if (selectedCard.length === 4) {
+                  if (index === 0) {
+                    item = selectedCard[3];
+                  } else {
+                    item = undefined;
+                  }
                 } else {
-                  item = [undefined, undefined];
+                  item = selectedCard[index + 3];
                 }
-                
-                let uri = item[index];
                 return (
                   <TouchableOpacity
                     key={index}
                     onPress={() => {
-                      setSelectedCardUrl(selectedCardUrl.filter(url => url !== uri));
-                      setSelectedCard(selectedCard.filter(card => card !== cardEn[index]));
+                      setSelectedCard(selectedCard.filter(card => card !== item));
+                      console.log(selectedCard);
                     }}
                     className="w-[30%] h-[90%] mx-1.5"
                   >
                     <Image
-                      source={{ uri: uri ? uri : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s' }}
+                      source={{ uri: item ? item.url : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s' }}
                       resizeMode="contain"
                       className="rounded-3xl flex-1"
                     />
                   </TouchableOpacity>
-                );
+                )
               })
             }
 
-            <TouchableOpacity className="p-2 mr-3 mb-3">
+            <TouchableOpacity
+              onPress={handleSentence}
+              className="p-2 mr-3 mb-3"
+            >
               <FontAwesome name="volume-up" size={30} color="black" />
               <Text className="text-sm text-black text-center">Phát</Text>
             </TouchableOpacity>
@@ -167,30 +235,25 @@ export default function Flashcard() {
         </View>
       </View>
 
+
       {/* Cards displayed */}
       <View className="w-full h-[34%] bg-white">
         <FlatList
-          data={cardUrls.filter(url => !selectedCardUrl.includes(url))}
+          data={cards.filter(card => !selectedCard.includes(card))}
           renderItem={({ item, index }) => (
             <TouchableOpacity
               onPress={() => {
-                if (selectedCard.length >= 5) {
-                  alert("Chỉ có thể chọn tối đa 5 từ");
-                } else {
+                if (selectedCard.length < 5) {
+                  setSelectedCard([...selectedCard, item]);
                   console.log(selectedCard);
-                  console.log(cardEn[index]);
-                  console.log(cardIds);
-                  console.log(cardNames);
-                  setCardIds(cardIds.filter(id => id !== cardIds[index]));
-                  setCardNames(cardNames.filter(name => name !== cardNames[index]));
-                  setSelectedCard(selected => [...selected, cardEn[index]]);
-                  setSelectedCardUrl(selected => [...selected, item]);
+                } else {
+                  alert("Chỉ có thể chọn tối đa 5 từ");
                 }
               }}
               className="p-2 w-1/3"
             >
               <Image
-                source={{ url: item }}
+                source={{ uri: item.url }}
                 className="h-[110] w-full rounded-3xl"
                 resizeMode="cover"
               />
@@ -222,13 +285,13 @@ export default function Flashcard() {
 
         <View className="flex-3 items-center justify-center">
           <Text className="text-3xl text-black text-center">
-            {categoryNames[selectedTopic]}
+            {categories[selectedTopic] && categories[selectedTopic].name}
           </Text>
         </View>
 
         <TouchableOpacity
           onPress={() => {
-            if (selectedTopic < categoryIds.length - 1) {
+            if (selectedTopic < categories.length - 1) {
               setSelectedTopic(selectedTopic + 1);
               scrollViewRef.current?.scrollTo({
                 x: (selectedTopic + 1) * 90,
@@ -265,24 +328,25 @@ export default function Flashcard() {
           showsHorizontalScrollIndicator={false}
           className="flex-1 flex-row"
         >
-
-          {categoryUrls.map((url, index) => (
+          {categories.map((category, index) => (
             <TouchableOpacity
               key={index}
               onPress={() => {
                 setSelectedTopic(index);
-
               }}
               className={`${selectedTopic === index ? "border-2 border-blue-400" : ""}`}
             >
               <Image
-                source={{ uri: url }}
+                source={{ uri: category.url }}
                 className="h-[100%] w-[100]"
                 resizeMode="cover" />
             </TouchableOpacity>
           ))}
+
+
+
         </ScrollView>
       </View>
-    </SafeAreaView>
+    </SafeAreaView >
   );
 }
