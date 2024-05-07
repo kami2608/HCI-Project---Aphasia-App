@@ -33,6 +33,7 @@ public class Card {
     private String wordVi;
     private String wordEn;
     private String imgUrl;
+    private String audioUrl;
 
     @ManyToOne
     @JoinColumn(name = "category_id", referencedColumnName = "categoryId")

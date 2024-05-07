@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   SafeAreaView,
-  StatusBar,
   Text,
   TouchableOpacity,
   Image,
@@ -14,7 +13,10 @@ import AntDesign from "react-native-vector-icons/AntDesign";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import axios from 'axios';
 import Logout from "../components/Logout";
-import { translate, speak} from 'google-translate-api-x';
+import { translate, speak } from 'google-translate-api-x';
+import { Audio } from "expo-av";
+import * as FileSystem from 'expo-file-system';
+
 
 export default function Flashcard() {
   const navigation = useNavigation();
@@ -23,10 +25,12 @@ export default function Flashcard() {
   const [selectedCard, setSelectedCard] = useState([]);
   const [categories, setCategories] = useState([]);
   const [cards, setCards] = useState([]);
+  const [sound, setSound] = useState();
+  const [prevSelectedCardLength, setPrevSelectedCardLength] = useState(0);
 
   // get all categories 
   useEffect(() => {
-    axios.get('http://192.168.0.102:8080/api/v1/cards/category').then(res => {
+    axios.get('http://192.168.0.101:8080/api/v1/cards/category').then(res => {
       setCategories(res.data.map(category => ({
         id: category.categoryId,
         name: category.categoryName,
@@ -40,13 +44,14 @@ export default function Flashcard() {
 
   // get cards by category
   const getCard = async (categoryId) => {
-    await axios.get(`http://192.168.0.102:8080/api/v1/cards/category/${categoryId}`).then(res => {
+    await axios.get(`http://192.168.0.101:8080/api/v1/cards/category/${categoryId}`).then(res => {
       setCards(res.data.map(card => ({
         id: card.cardId,
         name: card.wordVi,
         en: card.wordEn,
         symbol: card.symbol,
-        url: card.imgUrl
+        url: card.imgUrl,
+        sound: card.audioUrl
       })))
     }).catch(err => {
       console.log(err);
@@ -62,7 +67,7 @@ export default function Flashcard() {
   }, [selectedTopic, categories]);
 
 
-  // get full sentence with model
+  // get and play full sentence
   const handleSentence = async () => {
     let sentence;
     const string = selectedCard.map(card => card.en).join(' ');
@@ -77,27 +82,37 @@ export default function Flashcard() {
     } catch (error) {
       console.error('An error occurred:', error);
     }
-    // try {
-    //   const audio = await speak(sentence, 'vi');
-    //   const fileUri = FileSystem.documentDirectory + 'sentence.mp3';
-    //   await FileSystem.writeAsStringAsync(fileUri, audio, { encoding: FileSystem.EncodingType.Base64 });
-    //   // Play the audio file
-    //   const sound = new Sound(fileUri, '', (error) => {
-    //     if (error) {
-    //       console.error('Failed to load the sound', error);
-    //     } else {
-    //       sound.play((success) => {
-    //         if (!success) {
-    //           console.error('Sound did not play successfully');
-    //         }
-    //       });
-    //     }
-    //   });
-    // } catch (error) {
-    //   console.error('An error occurred:', error); 
-    // }
+
+    try {
+      const res = await speak(sentence, 'vi');
+      console.log(res);
+      saveBase64ToMp3(res, 'sentence');
+    } catch (error) {
+      console.error('An error occurred:', error);
+    }
   }
-  
+
+  // play single card sound
+  async function playSound() {
+    console.log('Loading Sound');
+    console.log(selectedCard[selectedCard.length - 1].sound);
+    const { sound } = await Audio.Sound.createAsync(
+      {
+        uri: selectedCard[selectedCard.length - 1].sound,
+        shouldPlay: true,
+      }
+    );
+    setSound(sound);
+    console.log('Playing Sound');
+    await sound.playAsync();
+  }
+
+  useEffect(() => {
+    if (selectedCard.length > prevSelectedCardLength) {
+      playSound();
+    }
+    setPrevSelectedCardLength(selectedCard.length);
+  }, [selectedCard]);
 
   // query model
   async function query(data, retries = 10) {
@@ -133,6 +148,24 @@ export default function Flashcard() {
 
   const deleteSelected = () => {
     setSelectedCard([]);
+  }
+
+  async function saveBase64ToMp3(base64, file) {
+    console.log('Saving file...');
+    const path = FileSystem.documentDirectory + file + '.mp3';
+    // 'base64String' is the base64 string of the mp3 file
+    await FileSystem.writeAsStringAsync(path, base64, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    console.log('File saved to:', path);
+    const { sound } = await Audio.Sound.createAsync(
+      { uri: path }
+    );
+    setSound(sound);
+    console.log('Playing Sound');
+    await sound.playAsync();
+    
   }
 
 

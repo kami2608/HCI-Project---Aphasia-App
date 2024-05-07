@@ -7,6 +7,7 @@ To run this application, you need to install:
 - Docker Desktop (Windows)
 - Docker Compose
 
+For model API key, contact us or go to [grammarly/coedit-large](https://huggingface.co/grammarly/coedit-large) and get your own API key.\
 Clone this repository: 
 ```
 git clone https://github.com/kami2608/HCI-Project---Aphasia-App.git
@@ -23,7 +24,8 @@ mvn spring-boot:run
 Install node-modules and other packages for the front-end: 
 ``` 
 npm install
-npm i google-translate-api-x 
+npm i google-translate-api-x react-native-fs expo-av
+npx expo install expo-file-system
 ``` 
 Run the front-end: 
 ``` 
