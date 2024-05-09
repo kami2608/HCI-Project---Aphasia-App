@@ -24,7 +24,7 @@ mvn spring-boot:run
 Install node-modules and other packages for the front-end: 
 ``` 
 npm install
-npm i google-translate-api-x react-native-fs expo-av
+npm i google-translate-api-x expo-av
 npx expo install expo-file-system
 ``` 
 Run the front-end: 
