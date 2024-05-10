@@ -23,7 +23,7 @@ npm i --save-dev react-native-dotenv
 npm i google-translate-api-x react-native-fs expo-av
 npx expo install expo-file-system
 ``` 
-You will need .evn file with keys to run this project, contact the owner of the reposition.
+You will need .env file with keys to run this project, contact the owner of the reposition.
 
 Run the front-end: 
 ``` 
