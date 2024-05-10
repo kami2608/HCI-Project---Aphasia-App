@@ -1,0 +1,40 @@
+version: '3'
+services:
+  back-end:
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+  postgres: 
+    container_name: postgres-hci
+    image: postgres:12
+    ports:
+      - "5432:5432"
+    environment:
+      - 'POSTGRES_DB=hci'
+      - 'POSTGRES_PASSWORD=12345'
+      - 'POSTGRES_USER=hci'
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - //e/Downloads:/tmp/downloads
+    networks:
+      - postgres
+  pgadmin:
+    container_name: pgadmin-hci
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    networks:
+      - postgres
+networks:
+  postgres: 
+    driver: bridge

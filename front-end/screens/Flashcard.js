@@ -49,7 +49,6 @@ export default function Flashcard() {
         id: card.cardId,
         name: card.wordVi,
         en: card.wordEn,
-        symbol: card.symbol,
         url: card.imgUrl,
         sound: card.audioUrl
       })))
@@ -61,6 +60,7 @@ export default function Flashcard() {
   // display all cards of a category
   useEffect(() => {
     if (categories.length > 0) {
+      console.log(categories[selectedTopic].id);
       getCard(categories[selectedTopic].id);
       // getCard(categories[selectedTopic].id);
     }
@@ -85,7 +85,6 @@ export default function Flashcard() {
 
     try {
       const res = await speak(sentence, 'vi');
-      console.log(res);
       saveBase64ToMp3(res, 'sentence');
     } catch (error) {
       console.error('An error occurred:', error);

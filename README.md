@@ -12,21 +12,19 @@ Clone this repository:
 ```
 git clone https://github.com/kami2608/HCI-Project---Aphasia-App.git
 ``` 
-Setup Docker: 
-``` 
-docker-compose up
-```
 Run the back-end: 
 ``` 
-cd back-end
-mvn spring-boot:run
+docker-compose up
 ``` 
 Install node-modules and other packages for the front-end: 
 ``` 
 npm install
+npm i --save-dev react-native-dotenv
 npm i google-translate-api-x react-native-fs expo-av
 npx expo install expo-file-system
 ``` 
+You will need .evn file with keys to run this project, contact the owner of the reposition.
+
 Run the front-end: 
 ``` 
 cd front-end

@@ -11,6 +11,7 @@ com\hci\HCIApplication.class
 com\hci\address\dto\CityDto$CityDtoBuilder.class
 com\hci\address\dto\WardDto$WardDtoBuilder.class
 com\hci\address\repository\CityRepository.class
+com\hci\card\entity\Sentence$SentenceBuilder.class
 com\hci\address\dto\DistrictDto.class
 com\hci\card\repository\CardRepository.class
 com\hci\address\repository\DistrictRepository.class
@@ -19,10 +20,12 @@ com\hci\address\AddressController.class
 com\hci\address\entity\District.class
 com\hci\address\dto\CityDto.class
 com\hci\card\entity\Card$CardBuilder.class
+com\hci\card\repository\SentenceRepository.class
 com\hci\address\entity\Ward.class
 com\hci\card\dto\CategoryDto$CategoryDtoBuilder.class
 com\hci\address\entity\City$CityBuilder.class
 com\hci\address\entity\City.class
+com\hci\card\entity\Sentence.class
 com\hci\address\dto\DistrictDto$DistrictDtoBuilder.class
 com\hci\address\AddressService.class
 com\hci\address\entity\District$DistrictBuilder.class

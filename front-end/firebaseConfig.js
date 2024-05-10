@@ -11,14 +11,14 @@ import { getStorage } from 'firebase/storage';
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "AIzaSyBgh2l-ki97b4CDn6ppf93DEJ7khR8Qhj8",
-    authDomain: "hci-aphasia.firebaseapp.com",
-    databaseURL: "https://hci-aphasia-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "hci-aphasia",
-    storageBucket: "hci-aphasia.appspot.com",
-    messagingSenderId: "1043663112022",
-    appId: "1:1043663112022:web:d904bea21a6e1842a4f8f7",
-    measurementId: "G-HEY3N2D11F"
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID 
 };
 
 // Initialize Firebase
