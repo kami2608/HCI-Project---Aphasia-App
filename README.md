@@ -17,7 +17,8 @@ Run the back-end:
 docker-compose up
 ``` 
 Install node-modules and other packages for the front-end: 
-``` 
+```
+cd front-end
 npm install
 npm i --save-dev react-native-dotenv
 npm i google-translate-api-x react-native-fs expo-av
@@ -27,6 +28,5 @@ You will need .env file with keys to run this project, contact the owner of the 
 
 Run the front-end: 
 ``` 
-cd front-end
 npm start
 ``` 
