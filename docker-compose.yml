@@ -1,15 +1,5 @@
 version: '3'
 services:
-  back-end:
-    build:
-      context: ./back-end
-      dockerfile: Dockerfile
-    ports:
-      - '8080:8080'
-    depends_on:
-      - postgres
-    networks:
-      - postgres
   postgres: 
     container_name: postgres-hci
     image: postgres:12
@@ -33,6 +23,16 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
+    networks:
+      - postgres
+  back-end:
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    depends_on:
+      - postgres
     networks:
       - postgres
 networks:
