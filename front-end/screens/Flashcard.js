@@ -289,6 +289,8 @@ export default function Flashcard() {
                 className="h-[110] w-full rounded-3xl"
                 resizeMode="cover"
               />
+              {/* thay ten cua card o day */}
+              <Text className="text-center mt-1">Card's name</Text> 
             </TouchableOpacity>
           )}
           numColumns={3}
@@ -297,7 +299,7 @@ export default function Flashcard() {
       </View>
 
       {/* Navigation button */}
-      <View className="w-full h-[11%] flex flex-row items-center justify-between bg-white px-4 border-t-2 border-gray-300">
+      <View className="w-full h-[11%] flex flex-row items-center justify-between bg-orange-400 px-4 border-t-2 border-gray-300">
         <TouchableOpacity
           onPress={() => {
             if (selectedTopic > 0) {
