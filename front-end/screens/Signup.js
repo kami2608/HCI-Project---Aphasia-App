@@ -99,6 +99,12 @@ export default function Signup() {
                 </Text>
               </TouchableOpacity>
             </View>
+            <View className="flex-row justify-center">
+              <Text className="text-lg">Bạn đã có tài khoản? </Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                <Text className="text-sky-600 text-lg">Đăng nhập</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
