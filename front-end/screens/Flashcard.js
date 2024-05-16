@@ -187,7 +187,7 @@ export default function Flashcard() {
       </View>
 
       {/* Picture to speak section */}
-      <View className="w-full h-[35%] items-center">
+      <View className="w-full h-[32%] items-center">
 
         <View className="flex flex-col items-center bg-orange-400 px-2 py-3">
           <View className="w-full h-[48%] flex flex-row justify-items my-1">
@@ -200,7 +200,7 @@ export default function Flashcard() {
                     onPress={() => {
                       setSelectedCard(selectedCard.filter(card => card !== item));
                     }}
-                    className="w-[30%] h-[90%] mx-1.5"
+                    className="w-[27%] h-[90%] mx-1.5"
                   >
                     <Image
                       source={{ uri: item ? item.url : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s' }}
@@ -244,7 +244,7 @@ export default function Flashcard() {
                       setSelectedCard(selectedCard.filter(card => card !== item));
                       console.log(selectedCard);
                     }}
-                    className="w-[30%] h-[90%] mx-1.5"
+                    className="w-[27%] h-[90%] mx-1.5"
                   >
                     <Image
                       source={{ uri: item ? item.url : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s' }}
@@ -269,7 +269,7 @@ export default function Flashcard() {
 
 
       {/* Cards displayed */}
-      <View className="w-full h-[34%] bg-white">
+      <View className="w-full h-[45%] bg-gray-200">
         <FlatList
           data={cards.filter(card => !selectedCard.includes(card))}
           renderItem={({ item, index }) => (
@@ -282,11 +282,11 @@ export default function Flashcard() {
                   alert("Chỉ có thể chọn tối đa 5 từ");
                 }
               }}
-              className="p-2 w-1/3"
+              className="flex-1 m-3 p-2 items-center justify-center bg-white rounded-xl shadow-md"
             >
               <Image
                 source={{ uri: item.url }}
-                className="h-[110] w-full rounded-3xl"
+                className="h-[95] w-full rounded-3xl"
                 resizeMode="cover"
               />
               {/* thay ten cua card o day */}
@@ -299,7 +299,7 @@ export default function Flashcard() {
       </View>
 
       {/* Navigation button */}
-      <View className="w-full h-[11%] flex flex-row items-center justify-between bg-orange-400 px-4 border-t-2 border-gray-300">
+      <View className="w-full h-[8%] flex flex-row items-center justify-between bg-orange-400 px-4 border-t-2 border-gray-300">
         <TouchableOpacity
           onPress={() => {
             if (selectedTopic > 0) {
@@ -313,12 +313,12 @@ export default function Flashcard() {
           }}
           className="flex-1 items-start justify-center"
         >
-          <AntDesign name="left" size={50} color="black" />
-          <Text className="text-sm text-black text-center">Quay lại</Text>
+          <AntDesign name="left" size={35} color="black" />
+          <Text className="text-xs text-black text-center">Quay lại</Text>
         </TouchableOpacity>
 
         <View className="flex-3 items-center justify-center">
-          <Text className="text-3xl text-black text-center">
+          <Text className="text-xl text-black text-center">
             {categories[selectedTopic] && categories[selectedTopic].name}
           </Text>
         </View>
@@ -335,15 +335,15 @@ export default function Flashcard() {
           }}
           className="flex-1 items-end justify-center"
         >
-          <AntDesign name="right" size={50} color="black" />
+          <AntDesign name="right" size={35} color="black" />
           <Text className="text-sm text-black text-center">Tiếp theo</Text>
         </TouchableOpacity>
       </View>
 
       {/* Category */}
-      <View className="w-full h-[13%] bg-white flex-row">
+      <View className="w-full h-[10%] bg-white flex-row">
         <TouchableOpacity
-          className="w-[100] h-full"
+          className="w-[85] h-full"
           onPress={() => {
             navigation.navigate("Sentences");
           }}
