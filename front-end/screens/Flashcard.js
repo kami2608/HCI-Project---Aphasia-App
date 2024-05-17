@@ -7,6 +7,8 @@ import {
   Image,
   ScrollView,
   FlatList,
+  Animated,
+  Easing,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import AntDesign from "react-native-vector-icons/AntDesign";
@@ -17,7 +19,67 @@ import { translate, speak } from 'google-translate-api-x';
 import { Audio } from "expo-av";
 import * as FileSystem from 'expo-file-system';
 
+const ProgressDots = () => {
+  const dots = [
+    useRef(new Animated.Value(0)).current,
+    useRef(new Animated.Value(0)).current,
+    useRef(new Animated.Value(0)).current,
+  ];
 
+  useEffect(() => {
+    dots.forEach((dot, index) => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(dot, {
+            toValue: 1,
+            duration: 400,
+            easing: Easing.linear,
+            useNativeDriver: true,
+            delay: index * 100,
+          }),
+          Animated.timing(dot, {
+            toValue: 0,
+            duration: 400,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    });
+  }, [dots]);
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 10,
+      }}
+    >
+      {dots.map((dot, index) => (
+        <Animated.View
+          key={index}
+          style={{
+            marginHorizontal: 5,
+            width: 30,
+            height: 30,
+            borderRadius: 12.5,
+            backgroundColor: "orange",
+            transform: [
+              {
+                translateY: dot.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, -15],
+                }),
+              },
+            ],
+          }}
+        />
+      ))}
+    </View>
+  );
+};
+  
 export default function Flashcard() {
   const navigation = useNavigation();
   const scrollViewRef = useRef();
@@ -27,6 +89,7 @@ export default function Flashcard() {
   const [cards, setCards] = useState([]);
   const [sound, setSound] = useState();
   const [prevSelectedCardLength, setPrevSelectedCardLength] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   // get all categories 
   useEffect(() => {
@@ -270,7 +333,12 @@ export default function Flashcard() {
 
       {/* Cards displayed */}
       <View className="w-full h-[45%] bg-gray-200">
-        <FlatList
+        {isLoading ? (
+          <View className="flex-1 justify-center items-center">
+            <ProgressDots />
+          </View>
+        ) : (
+          <FlatList
           data={cards.filter(card => !selectedCard.includes(card))}
           renderItem={({ item, index }) => (
             <TouchableOpacity
@@ -296,6 +364,7 @@ export default function Flashcard() {
           numColumns={3}
           showsVerticalScrollIndicator={false}
         />
+        )}
       </View>
 
       {/* Navigation button */}
