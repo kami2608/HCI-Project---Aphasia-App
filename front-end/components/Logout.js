@@ -19,13 +19,13 @@ export default function Logout() {
 
     return (
         <TouchableOpacity
-            className="pr-2 flex flex-column items-center"
+            style={{ paddingRight: 2, margin:2, flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
             onPress={() => {
                 logout();
             }}
         >
             <MaterialIcons name="logout" size={25} color="black" />
-            <Text className="text-xs text-black text-center">Đăng xuất</Text>
+            <Text style={{ fontSize: 12, color: 'black', textAlign: 'center' }}>Đăng xuất</Text>
         </TouchableOpacity>
     );
 }

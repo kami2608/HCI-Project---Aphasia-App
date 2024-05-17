@@ -10,14 +10,13 @@ import {
   Animated,
   Easing,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import axios from 'axios';
 import Logout from "../components/Logout";
-import { translate, speak } from 'google-translate-api-x';
+import { translate } from 'google-translate-api-x';
 import { Audio } from "expo-av";
-import * as FileSystem from 'expo-file-system';
+import Personal from "../components/Personal";
 
 const ProgressDots = () => {
   const dots = [
@@ -79,9 +78,8 @@ const ProgressDots = () => {
     </View>
   );
 };
-  
+
 export default function Flashcard() {
-  const navigation = useNavigation();
   const scrollViewRef = useRef();
   const [selectedTopic, setSelectedTopic] = useState(0);
   const [selectedCard, setSelectedCard] = useState([]);
@@ -93,7 +91,7 @@ export default function Flashcard() {
 
   // get all categories 
   useEffect(() => {
-    axios.get('http://192.168.0.101:8080/api/v1/cards/category').then(res => {
+    axios.get('http://192.168.0.100:8080/api/v1/cards/category').then(res => {
       setCategories(res.data.map(category => ({
         id: category.categoryId,
         name: category.categoryName,
@@ -107,7 +105,8 @@ export default function Flashcard() {
 
   // get cards by category
   const getCard = async (categoryId) => {
-    await axios.get(`http://192.168.0.101:8080/api/v1/cards/category/${categoryId}`).then(res => {
+    setIsLoading(true);
+    await axios.get(`http://192.168.0.100:8080/api/v1/cards/category/${categoryId}`).then(res => {
       setCards(res.data.map(card => ({
         id: card.cardId,
         name: card.wordVi,
@@ -115,19 +114,20 @@ export default function Flashcard() {
         url: card.imgUrl,
         sound: card.audioUrl
       })))
+      setIsLoading(false);
     }).catch(err => {
       console.log(err);
+      setIsLoading(false);
     })
   }
 
   // display all cards of a category
   useEffect(() => {
     if (categories.length > 0) {
-      console.log(categories[selectedTopic].id);
       getCard(categories[selectedTopic].id);
-      // getCard(categories[selectedTopic].id);
+      // console.log(cards);
     }
-  }, [selectedTopic, categories]);
+  }, [categories, selectedTopic]);
 
 
   // get and play full sentence
@@ -145,14 +145,13 @@ export default function Flashcard() {
     } catch (error) {
       console.error('An error occurred:', error);
     }
-
-    try {
-      const res = await speak(sentence, 'vi');
-      saveBase64ToMp3(res, 'sentence');
-    } catch (error) {
-      console.error('An error occurred:', error);
-    }
-  }
+    queryVoice({ "text": sentence }).then(async (response) => {
+      console.log(response);
+      const audio = new Audio.Sound();
+      await audio.loadAsync({ uri: 'data:audio/wav;base64,' + btoa(String.fromCharCode(...new Uint8Array(response.data))) });
+      await audio.playAsync();
+    });
+}
 
   // play single card sound
   async function playSound() {
@@ -212,22 +211,15 @@ export default function Flashcard() {
     setSelectedCard([]);
   }
 
-  async function saveBase64ToMp3(base64, file) {
-    console.log('Saving file...');
-    const path = FileSystem.documentDirectory + file + '.mp3';
-    // 'base64String' is the base64 string of the mp3 file
-    await FileSystem.writeAsStringAsync(path, base64, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-
-    console.log('File saved to:', path);
-    const { sound } = await Audio.Sound.createAsync(
-      { uri: path }
-    );
-    setSound(sound);
-    console.log('Playing Sound');
-    await sound.playAsync();
-    
+  async function queryVoice(input) {
+    try {
+      const response = await axios.post('http://192.168.0.100:5000/synthesize', input, {
+        responseType: 'arraybuffer',
+      });
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
 
@@ -237,13 +229,7 @@ export default function Flashcard() {
       {/* <StatusBar style="light" /> */}
       <View className="w-full h-[6%] bg-white rounded-xl flex-row justify-between items-center">
 
-        <TouchableOpacity
-          className="pl-4 flex flex-column items-center"
-          onPress={() => navigation.navigate("Profile")}
-        >
-          <FontAwesome name="user-circle-o" size={25} color="black" />
-          <Text className="text-xs text-black text-center">Tôi</Text>
-        </TouchableOpacity>
+        <Personal />
 
         <Logout />
 
@@ -266,8 +252,8 @@ export default function Flashcard() {
                     className="w-[27%] h-[90%] mx-1.5"
                   >
                     <Image
-                      source={{ uri: item ? item.url : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s' }}
-                      resizeMode="contain"
+                      source={{ uri: item ? item.url : 'https://wallpapers.com/images/hd/white-square-background-56v690fpm25a3o6s.jpg' }}
+                      resizeMode="cover"
                       className="rounded-3xl flex-1"
                     />
                   </TouchableOpacity>
@@ -310,8 +296,8 @@ export default function Flashcard() {
                     className="w-[27%] h-[90%] mx-1.5"
                   >
                     <Image
-                      source={{ uri: item ? item.url : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8VxJ2zqWiWC5PQz-6ChPiaefrAacJx-4mh6NMPNqg0g&s' }}
-                      resizeMode="contain"
+                      source={{ uri: item ? item.url : 'https://wallpapers.com/images/hd/white-square-background-56v690fpm25a3o6s.jpg' }}
+                      resizeMode="cover"
                       className="rounded-3xl flex-1"
                     />
                   </TouchableOpacity>
@@ -339,31 +325,33 @@ export default function Flashcard() {
           </View>
         ) : (
           <FlatList
-          data={cards.filter(card => !selectedCard.includes(card))}
-          renderItem={({ item, index }) => (
-            <TouchableOpacity
-              onPress={() => {
-                if (selectedCard.length < 5) {
-                  setSelectedCard([...selectedCard, item]);
-                  console.log(selectedCard);
-                } else {
-                  alert("Chỉ có thể chọn tối đa 5 từ");
-                }
-              }}
-              className="flex-1 m-3 p-2 items-center justify-center bg-white rounded-xl shadow-md"
-            >
-              <Image
-                source={{ uri: item.url }}
-                className="h-[95] w-full rounded-3xl"
-                resizeMode="cover"
-              />
-              {/* thay ten cua card o day */}
-              <Text className="text-center mt-1">Card's name</Text> 
-            </TouchableOpacity>
-          )}
-          numColumns={3}
-          showsVerticalScrollIndicator={false}
-        />
+            data={cards}
+            extraData={selectedCard}
+            renderItem={({ item, index }) => (
+              <View style={{ width: '33.33%', opacity: selectedCard.includes(item) ? 0 : 1 }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (selectedCard.length < 5) {
+                      setSelectedCard([...selectedCard, item]);
+                      console.log(selectedCard);
+                    } else {
+                      alert("Chỉ có thể chọn tối đa 5 từ");
+                    }
+                  }}
+                  className="flex-1 m-3 p-2 items-center justify-center bg-white rounded-xl shadow-md"
+                >
+                  <Image
+                    source={{ uri: item.url }}
+                    className="h-[95] w-full rounded-3xl"
+                    resizeMode="cover"
+                  />
+                  <Text className="text-sm text-black text-center">{item.name}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            numColumns={3}
+            showsVerticalScrollIndicator={false}
+          />
         )}
       </View>
 
@@ -410,21 +398,7 @@ export default function Flashcard() {
       </View>
 
       {/* Category */}
-      <View className="w-full h-[10%] bg-white flex-row">
-        <TouchableOpacity
-          className="w-[85] h-full"
-          onPress={() => {
-            navigation.navigate("Sentences");
-          }}
-        >
-          <Image
-            source={{
-              uri: "https://upanh123.com/wp-content/uploads/2021/05/hinh-nen-mau-vang25.jpg",
-            }}
-            className="h-full w-full"
-            resizeMode="cover"
-          />
-        </TouchableOpacity>
+      <View className="w-full h-[12,1%] bg-white flex-row">
         <ScrollView
           horizontal
           ref={scrollViewRef}
@@ -437,16 +411,14 @@ export default function Flashcard() {
               onPress={() => {
                 setSelectedTopic(index);
               }}
-              className={`${selectedTopic === index ? "border-2 border-blue-400" : ""}`}
+              className={`${selectedTopic === index ? "border-8 border-orange-600" : ""}`}
             >
               <Image
                 source={{ uri: category.url }}
-                className="h-[100%] w-[100]"
+                className="h-[100] w-[100]"
                 resizeMode="cover" />
             </TouchableOpacity>
           ))}
-
-
 
         </ScrollView>
       </View>

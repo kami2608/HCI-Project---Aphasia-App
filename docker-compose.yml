@@ -33,6 +33,10 @@ services:
       - '8080:8080'
     depends_on:
       - postgres
+    environment:
+      - 'POSTGRES_DB=hci'
+      - 'POSTGRES_PASSWORD=12345'
+      - 'POSTGRES_USER=hci'
     networks:
       - postgres
 networks:
