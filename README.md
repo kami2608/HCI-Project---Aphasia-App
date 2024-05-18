@@ -15,7 +15,7 @@ Get your own ip address to run the servers:
 ``` 
 ipconfig
 ```
-Get the IPv4 Address field and fill it in the api end-points in ./front-end/screens/Flashcard.js.
+Get the IPv4 Address field and fill it in the api end-points in **./front-end/screens/Flashcard.js.**
 
 ## Run the application
 Clone this repository: 
@@ -26,6 +26,10 @@ Run the back-end:
 ``` 
 docker-compose up
 ``` 
+For the text-to-speech server to run, try creating a new ipynb file in **/tts** and run this: 
+```
+%pip install --upgrade transformers accelerate
+```
 
 Run text-to-speech server: 
 ```
