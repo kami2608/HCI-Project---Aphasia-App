@@ -146,7 +146,6 @@ export default function Flashcard() {
       console.error('An error occurred:', error);
     }
     queryVoice({ "text": sentence }).then(async (response) => {
-      console.log(response);
       const audio = new Audio.Sound();
       await audio.loadAsync({ uri: 'data:audio/wav;base64,' + btoa(String.fromCharCode(...new Uint8Array(response.data))) });
       await audio.playAsync();

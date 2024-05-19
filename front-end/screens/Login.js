@@ -2,18 +2,19 @@ import {
   View,
   Text,
   TextInput,
-  Touchable,
   TouchableOpacity,
   Image,
   KeyboardAvoidingView,
   Platform,
-  useAnimatedValue,
+  Keyboard,
+  TouchableWithoutFeedback
 } from "react-native";
 import React, { useState } from "react";
-import { StatusBar } from "expo-status-bar";
+import logo from "../assets/logo.png";
 import { useNavigation } from "@react-navigation/native";
 import { FIREBASE_AUTH } from "../firebaseConfig";
-import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { ThemedButton } from "react-native-really-awesome-button";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 const Login = () => {
   const navigation = useNavigation();
@@ -22,9 +23,9 @@ const Login = () => {
   const [loading, setLoading] = useState(false)
   const auth = FIREBASE_AUTH
 
-  const login = async() => {
+  const login = async () => {
     setLoading(true)
-    try{
+    try {
       console.log(email, ": ", password)
       await signInWithEmailAndPassword(auth, email, password)
       navigation.navigate("Flashcard")
@@ -37,61 +38,56 @@ const Login = () => {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "white" }}
-      behavior={Platform.OS === "ios" ? "padding" : null}
-    >
-      <View className="bg-white h-full w-full flex items-center">
-        {/* <StatusBar style="light"/> */}
-        <Image
-          className="h-[37%] w-full absolute left-0 right-0 mx-auto object-cover mt-[60]"
-          source={{
-            uri: "https://www.houstonent.com/hubfs/blog%20images/Aphasia1.jpg",
-          }}
-          resizeMode="contain"
-        />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: "white" }}
+        behavior={Platform.OS === "ios" ? "padding" : null}
+      >
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Image
+            style={{ height: '37%', width: '50%', marginBottom: 20 }}
+            source={logo}
+            resizeMode="contain"
+          />
 
-        <View className="h-full w-full flex justify-around">
-          <View className="flex items-center mx-10 mt-[350] space-y-3">
-            <View className="bg-black/4 p-3 rounded-2xl w-full border border-solid border-gray-400">
+          <View style={{ width: '100%', paddingHorizontal: 10 }}>
+            <View style={{ backgroundColor: '#DBD9D940', padding: 15, borderRadius: 30, marginBottom: 10 }}>
               <TextInput
-                className="text-xl"
+                style={{ fontSize: 18 }}
                 value={email}
                 placeholder="Email"
-                placeholderTextColor="#CCCCCC"
+                placeholderTextColor="#908D8D"
                 onChangeText={setEmail}
+                autoFocus={true}
               />
             </View>
-            <View className="bg-black/4 p-3 rounded-2xl w-full mb-3 border border-solid border-gray-400">
+            <View style={{ backgroundColor: '#DBD9D940', padding: 15, borderRadius: 30, marginBottom: 10 }}>
               <TextInput
-                className="text-xl"
+                style={{ fontSize: 18 }}
                 value={password}
                 placeholder="Mật khẩu"
-                placeholderTextColor="#CCCCCC"
+                placeholderTextColor="#908D8D"
                 onChangeText={setPass}
                 secureTextEntry
               />
             </View>
-            <View>
-              <TouchableOpacity
-                className="w-full bg-sky-400 p-3 rounded-2xl mb-2 mt-4 border border-solid border-sky-700"
-                onPress={() => login()}
-              >
-                <Text className="text-xl font-bold text-white text-center">
-                  Đăng nhập
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View className="flex-row justify-center">
-              <Text className="text-lg">Bạn chưa có tài khoản? </Text>
+
+            <ThemedButton name="bruce" type="primary"
+              backgroundColor="#F19F58" backgroundDarker="#A74628"
+              backgroundActive="#EBAC87" borderColor="#E3AF81"
+              onPress={() => login()}
+              className="mx-auto my-2"
+            >Đăng nhập</ThemedButton>
+            <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+              <Text className='text-base'>Bạn chưa có tài khoản? </Text>
               <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-                <Text className="text-sky-600 text-lg">Đăng ký</Text>
+                <Text className='text-orange-600 text-base font-semibold'>Đăng ký</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 };
 

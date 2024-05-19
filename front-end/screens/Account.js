@@ -18,6 +18,8 @@ import { useNavigation } from "@react-navigation/native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { FIREBASE_AUTH, FIREBASE_DB } from "../firebaseConfig";
 import { doc, setDoc } from "firebase/firestore";
+import { Keyboard, TouchableWithoutFeedback } from "react-native";
+import { ThemedButton } from "react-native-really-awesome-button";
 
 export default function Account() {
   const navigation = useNavigation();
@@ -105,146 +107,142 @@ export default function Account() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "white" }}
-      behavior={Platform.OS === "ios" ? "padding" : null}
-    >
-      {!isTextInputFocused && (
-        <View className="w-full items-center mt-12 pt-10">
-          <Text style={{ fontSize: 40 }}>Cài đặt thông tin</Text>
-        </View>
-      )}
-      <View className="w-full flex items-center">
-        <StatusBar style="light" />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: "white" }}
+        behavior={Platform.OS === "ios" ? "padding" : null}
+      >
+        {!isTextInputFocused && (
+          <View className="w-full items-center mt-10 -mb-5 pt-10">
+            <Text style={{ fontSize: 40, fontWeight:700 }}>Cài đặt thông tin</Text>
+          </View>
+        )}
+        <View className="w-full flex items-center">
+          <StatusBar style="light" />
 
-        <View className="pt-12 w-full flex justify-around">
-          <View className="flex items-center mx-10">
-            <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
-              <Icon name="idcard" size={30} color="black" />
-              <Text className="text-lg"> Tôi có thể gọi bạn là: </Text>
-            </View>
-            <View className="bg-black/4 pl-5 pb-2 rounded-3xl w-full mb-1 border border-solid border-gray-400">
-              <TextInput
-                className="text-lg"
-                value={form.name}
-                onChangeText={(value) => handleChange('name', value)}
-                placeholder="Nhập tên của bạn"
-                placeholderTextColor="#CCCCCC"
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-              />
-            </View>
-
-            <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
-              <Icon name="calendar" size={30} color="black" />
-              <Text className="text-lg"> Ngày sinh: </Text>
-            </View>
-            <View className="bg-black/4 pl-5 pb-2 rounded-3xl w-full mb-1 border border-solid border-gray-400">
-              <TextInput
-                className="text-lg"
-                value={form.dob}
-                onFocus={handleFocusDate}
-                onBlur={handleBlurDate}
-                placeholder="dd/mm/yyyy"
-                placeholderTextColor="#CCCCCC"
-                // editable={false}
-              />
-              {show && (
-                <DateTimePicker
-                value={getValidDate(form.dob)}
-                  mode="date"
-                  is24Hour={true}
-                  display="inline"
-                  onChange={onChange}
+          <View className="pt-12 w-full flex justify-around">
+            <View className="flex items-center mx-10">
+              <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
+                <Icon name="idcard" size={30} color="black" />
+                <Text className="text-lg"> Tôi có thể gọi bạn là: </Text>
+              </View>
+              <View style={{ width: '100%', backgroundColor: '#DBD9D940', padding: 15, borderRadius: 30, marginBottom: 10 }}>
+                <TextInput
+                  className="text-lg"
+                  value={form.name}
+                  onChangeText={(value) => handleChange('name', value)}
+                  placeholder="Nhập tên của bạn"
+                  placeholderTextColor="#CCCCCC"
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
                 />
-              )}
-            </View>
+              </View>
 
-            <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
-              <MaterialIcons name="call" size={30} color="black" />
-              <Text className="text-lg"> Số điện thoại của bạn: </Text>
-            </View>
-            <View className="bg-black/4 pl-5 pb-2 rounded-3xl w-full mb-1 border border-solid border-gray-400">
-              <TextInput
-                className="text-lg"
-                value={form.phone}
-                onChangeText={(value) => handleChange('phone', value)}
-                placeholder="Nhập số điện thoại"
-                placeholderTextColor="#CCCCCC"
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-              />
-            </View>
+              <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
+                <Icon name="calendar" size={30} color="black" />
+                <Text className="text-lg"> Ngày sinh: </Text>
+              </View>
+              <View style={{ width: '100%', backgroundColor: '#DBD9D940', padding: 15, borderRadius: 30, marginBottom: 10 }}>
+                <TextInput
+                  className="text-lg"
+                  value={form.dob}
+                  onFocus={handleFocusDate}
+                  onBlur={handleBlurDate}
+                  placeholder="dd/mm/yyyy"
+                  placeholderTextColor="#CCCCCC"
+                // editable={false}
+                />
+                {show && (
+                  <DateTimePicker
+                    value={getValidDate(form.dob)}
+                    mode="date"
+                    is24Hour={true}
+                    display="inline"
+                    onChange={onChange}
+                  />
+                )}
+              </View>
 
-            <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
-              <MaterialCommunityIcons
-                name="card-account-phone-outline"
-                size={34}
-                color="black"
-              />
-              <Text className="text-lg"> Số điện thoại người thân: </Text>
-            </View>
-            <View className="bg-black/4 pl-5 pb-2 rounded-3xl w-full mb-1 border border-solid border-gray-400">
-              <TextInput
-                className="text-lg"
-                value={form.emergencyPhone}
-                onChangeText={(value) => handleChange('emergencyPhone', value)}
-                placeholder="Nhập số điện thoại"
-                placeholderTextColor="#CCCCCC"
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-              />
-            </View>
+              <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
+                <MaterialIcons name="call" size={30} color="black" />
+                <Text className="text-lg"> Số điện thoại của bạn: </Text>
+              </View>
+              <View style={{ width: '100%', backgroundColor: '#DBD9D940', padding: 15, borderRadius: 30, marginBottom: 10 }}>
+                <TextInput
+                  className="text-lg"
+                  value={form.phone}
+                  onChangeText={(value) => handleChange('phone', value)}
+                  placeholder="Nhập số điện thoại"
+                  placeholderTextColor="#CCCCCC"
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                />
+              </View>
 
-            <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
-              <FontAwesome name="home" size={30} color="black" />
-              <Text className="text-lg"> Địa chỉ nhà: </Text>
-            </View>
-            <View className="bg-black/4 pl-5 pb-2 rounded-3xl w-full mb-1 border border-solid border-gray-400">
-              <TextInput
-                className="text-lg"
-                value={form.address}
-                onChangeText={(value) => handleChange('address', value)}
-                placeholder="VD: 144 Xuân Thủy, Cầu Giấy"
-                placeholderTextColor="#CCCCCC"
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-              />
-            </View>
+              <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
+                <MaterialCommunityIcons
+                  name="card-account-phone-outline"
+                  size={34}
+                  color="black"
+                />
+                <Text className="text-lg"> Số điện thoại người thân: </Text>
+              </View>
+              <View style={{ width: '100%', backgroundColor: '#DBD9D940', padding: 15, borderRadius: 30, marginBottom: 10 }}>
+                <TextInput
+                  className="text-lg"
+                  value={form.emergencyPhone}
+                  onChangeText={(value) => handleChange('emergencyPhone', value)}
+                  placeholder="Nhập số điện thoại"
+                  placeholderTextColor="#CCCCCC"
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                />
+              </View>
 
-            <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
-              <Icon name="idcard" size={30} color="black" />
-              <Text className="text-lg"> Thời gian bắt đầu bệnh: </Text>
-            </View>
-            <View className="bg-black/4 pl-5 pb-2 rounded-3xl w-full mb-1 border border-solid border-gray-400">
-              <TextInput
-                className="text-lg"
-                value={form.yearOfStroke}
-                onChangeText={(value) => handleChange('yearOfStroke', value)}
-                placeholder="VD: 2024"
-                placeholderTextColor="#CCCCCC"
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-              />
-            </View>
+              <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
+                <FontAwesome name="home" size={30} color="black" />
+                <Text className="text-lg"> Địa chỉ nhà: </Text>
+              </View>
+              <View style={{ width: '100%', backgroundColor: '#DBD9D940', padding: 15, borderRadius: 30, marginBottom: 10 }}>
+                <TextInput
+                  className="text-lg"
+                  value={form.address}
+                  onChangeText={(value) => handleChange('address', value)}
+                  placeholder="VD: 144 Xuân Thủy, Cầu Giấy"
+                  placeholderTextColor="#CCCCCC"
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                />
+              </View>
 
-            <View>
-              <TouchableOpacity
-                className="w-full p-3 rounded-2xl  mt-5 border border-solid border-black flex flex-row items-center"
-                onPress={() => {
-                  handleSubmit();
-                }}
-              >
-                <Icon name="right" size={24} color="black" />
-                <Text className="text-xl text-black text-center">
-                  {" "}
-                  Tiếp theo
-                </Text>
-              </TouchableOpacity>
+              <View className="bg-black/4 w-full mb-1 flex flex-row items-center">
+                <Icon name="idcard" size={30} color="black" />
+                <Text className="text-lg"> Thời gian bắt đầu bệnh: </Text>
+              </View>
+              <View style={{ width: '100%', backgroundColor: '#DBD9D940', padding: 15, borderRadius: 30, marginBottom: 10 }}>
+                <TextInput
+                  className="text-lg"
+                  value={form.yearOfStroke}
+                  onChangeText={(value) => handleChange('yearOfStroke', value)}
+                  placeholder="VD: 2024"
+                  placeholderTextColor="#CCCCCC"
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                />
+              </View>
+
+              <View>
+                <ThemedButton name="bruce" type="primary"
+                  backgroundColor="#F19F58" backgroundDarker="#A74628"
+                  backgroundActive="#EBAC87" borderColor="#E3AF81"
+                  onPress={() => handleSubmit()}
+                  className="mx-auto my-2"
+                >Tiếp theo</ThemedButton>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
